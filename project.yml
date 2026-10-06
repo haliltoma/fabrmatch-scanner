@@ -1,0 +1,61 @@
+# Xcode project definition (ADR-0002). Generate with: brew install xcodegen && xcodegen
+name: ScanLab
+options:
+  bundleIdPrefix: com.fabrmatch
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+packages:
+  ScanLabKit:
+    path: Packages/ScanLabKit
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+    SWIFT_APPROACHABLE_CONCURRENCY: YES
+    # Fill in your Apple ID team (Xcode → Settings → Accounts) for on-device signing.
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+targets:
+  ScanLab:
+    type: application
+    platform: iOS
+    sources:
+      - App/ScanLab
+    dependencies:
+      - package: ScanLabKit
+        product: ScanLabCore
+      - package: ScanLabKit
+        product: ScanLabExport
+      - package: ScanLabKit
+        product: ScanLabSensor
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.fabrmatch.scanlab
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: NO
+    info:
+      path: App/ScanLab/Info.plist
+      properties:
+        CFBundleDisplayName: ScanLab
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIRequiredDeviceCapabilities: [arkit]
+        # Exports appear in the Files app (FR-13.2).
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        NSCameraUsageDescription: "ScanLab, LiDAR ve kamera ile 3B tarama yapmak için kameraya erişir."
+        NSPhotoLibraryAddUsageDescription: "Ekran görüntülerini ve renderları fotoğraf kitaplığına kaydetmek için."
+        NSLocalNetworkUsageDescription: "Mac Köprüsü ile aynı ağdaki Mac'e bağlanmak için."
+        NSBonjourServices: [_scanlab._tcp]
+schemes:
+  ScanLab:
+    build:
+      targets:
+        ScanLab: all
+    test:
+      targets: []
