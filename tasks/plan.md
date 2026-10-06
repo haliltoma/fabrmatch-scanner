@@ -51,6 +51,18 @@ Ayrıntılı kabul ölçütleri: `tasks/todo.md`.
 - [x] Sürüm kaydı, güvenlik incelemesi, 5 adımlı duman testi (`scanlab-mac/freecad_bridge/smoke_test_f0b.py`)
 - [x] FreeCAD eklentisi freecad-mcp 0.1.25 ile eşlendi (eski sürüm yedeklendi)
 
+### Faz F3b — Mac geometri motoru + `scanlab-mcp` (PRD §4.7, M25)
+Ayrım (PRD §4.7): `scanlab/core` MCP'den bağımsız; `scanlab/mcp_server` ince kabuk.
+- [x] B1: uv projesi (Python 3.12, arm64 tekerlekler: trimesh, numpy, scipy, pymeshfix, manifold3d, matplotlib, mcp) + pytest
+- [x] B2: Depo + sürüm ağacı (SQLite + dosya; her işlem yeni sürüm, orijinal asla ezilmez, `version_revert`)
+- [x] B3: İçe aktarma: STL/PLY/OBJ/GLB + iPhone `mesh_chunks/*.bin` (SLMC v1, Swift ile ortak altın dosya testi)
+- [x] B4: `mesh_analyze` (bbox, sayılar, watertight, manifold, delik/sınır döngüsü, bileşen, dejenere, hacim/alan, duvar kalınlığı tahmini)
+- [x] B5: Onarım/temizlik: küçük bileşen silme, delik doldurma, tam onarım (pymeshfix); `dry_run` + `max_deviation_mm`
+- [x] B6: `deviation_compare` (Chamfer/Hausdorff/%95) + `mesh_render_views` (çok açılı PNG, GPU'suz)
+- [x] B7: Dışa aktarma STL/PLY/OBJ/GLB/3MF → `cad_exchange/out`
+- [x] B8: MCP sunucusu (stdio): araçlar + kaynaklar + `inspect_scan_quality` / `make_print_ready` prompt'ları; yol kısıtı, kod çalıştırma yok
+### Kontrol noktası F3b ✅ (39 pytest + stdio e2e): pytest yeşil; MCP üzerinden `mesh_analyze → mesh_repair → mesh_analyze` zinciri sürüm geçmişine yazılır (M25 kabul)
+
 ### Sonraki fazlar (indeks)
 F2 viewer/ölçüm/not · F2b Mac köprüsü · F3 mesh işleme + GLB + baskı ·
 F3b Python geometri motoru + MCP · F4 RoomPlan/ObjectCapture/nokta bulutu/TrueDepth ·

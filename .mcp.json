@@ -4,9 +4,24 @@
       "command": "/opt/homebrew/bin/uvx",
       "args": [
         "freecad-mcp==0.1.25",
-        "--host", "127.0.0.1",
-        "--freecadcmd", "/Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd"
+        "--host",
+        "127.0.0.1",
+        "--freecadcmd",
+        "/Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd"
       ]
+    },
+    "scanlab": {
+      "command": "/opt/homebrew/bin/uv",
+      "args": [
+        "run",
+        "--project",
+        "/Volumes/disk-1tb-11000/mobile-apps/fabrmatch-scanner/scanlab-mac",
+        "scanlab-mcp"
+      ],
+      "env": {
+        "SCANLAB_HOME": "${HOME}/ScanLab",
+        "SCANLAB_EXCHANGE": "/Volumes/disk-1tb-11000/mobile-apps/fabrmatch-scanner/scanlab-mac/cad_exchange"
+      }
     }
   }
 }

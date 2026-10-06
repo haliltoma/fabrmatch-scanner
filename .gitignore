@@ -4,3 +4,6 @@
 xcuserdata/
 DerivedData/
 .swiftpm/
+.venv/
+__pycache__/
+.pytest_cache/
