@@ -8,7 +8,7 @@ Son doğrulama: 2026-10-07 · Sonuç: **GEÇTİ (5/5)** · Rapor: `scanlab-mac/c
 | macOS | 27.0.1 (Apple Silicon) | |
 | FreeCAD | 1.1.3, build 20260725, arm64 yerel | `/Applications/FreeCAD.app` |
 | FreeCAD eklentisi | `FreeCADMCP` **0.1.25**, protokol 1 (neka-nat/freecad-mcp etiket `v0.1.25`, commit `d6bbe4b`) | `~/Library/Application Support/FreeCAD/v1-1/Mod/FreeCADMCP`; eski sürümün yedeği `…/v1-1/FreeCADMCP.backup-20261007-005125` |
-| MCP sunucusu | `freecad-mcp==0.1.25` (PyPI, `uvx`) | Claude Code: proje `.mcp.json` (sabit). Claude Desktop: sabitlenmemiş `freecad-mcp` |
+| MCP sunucusu | `freecad-mcp==0.1.25` (PyPI, `uvx`) | Claude Code: proje `.mcp.json`; Claude Desktop: `claude_desktop_config.json` — ikisi de `==0.1.25` ile sabit |
 | RPC köprüsü | XML-RPC `127.0.0.1:9875`, `remote_enabled=false`, `allowed_ips=127.0.0.1`, `auto_start_rpc=true` | |
 | Dilimleyici | OrcaSlicer (`/Applications/OrcaSlicer.app`), CLI çalışıyor; Claude Desktop'ta `orcaslicer-mcp` de tanımlı | PRD'deki PrusaSlicer/Cura yerine |
 | Swift | 6.2.4 (yalnızca Command Line Tools, Xcode yok) | iOS hedefi derlenemiyor |
