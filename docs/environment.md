@@ -7,14 +7,14 @@ Son doğrulama: 2026-10-07 · Sonuç: **GEÇTİ (5/5)** · Rapor: `scanlab-mac/c
 |---|---|---|
 | macOS | 27.0.1 (Apple Silicon) | |
 | FreeCAD | 1.1.3, build 20260725, arm64 yerel | `/Applications/FreeCAD.app` |
-| FreeCAD eklentisi | `FreeCADMCP` (neka-nat/freecad-mcp addon), sürüm bildirmiyor → **0.1.25'ten eski** | `~/Library/Application Support/FreeCAD/v1-1/Mod/FreeCADMCP` |
+| FreeCAD eklentisi | `FreeCADMCP` **0.1.25**, protokol 1 (neka-nat/freecad-mcp etiket `v0.1.25`, commit `d6bbe4b`) | `~/Library/Application Support/FreeCAD/v1-1/Mod/FreeCADMCP`; eski sürümün yedeği `…/v1-1/FreeCADMCP.backup-20261007-005125` |
 | MCP sunucusu | `freecad-mcp==0.1.25` (PyPI, `uvx`) | Claude Code: proje `.mcp.json` (sabit). Claude Desktop: sabitlenmemiş `freecad-mcp` |
 | RPC köprüsü | XML-RPC `127.0.0.1:9875`, `remote_enabled=false`, `allowed_ips=127.0.0.1`, `auto_start_rpc=true` | |
 | Dilimleyici | OrcaSlicer (`/Applications/OrcaSlicer.app`), CLI çalışıyor; Claude Desktop'ta `orcaslicer-mcp` de tanımlı | PRD'deki PrusaSlicer/Cura yerine |
 | Swift | 6.2.4 (yalnızca Command Line Tools, Xcode yok) | iOS hedefi derlenemiyor |
 
 ## Güvenlik incelemesi (PRD §28.7)
-- Eklenti: dinleme adresi ayar kapalıyken `127.0.0.1`; IP filtresi var; **kimlik doğrulama yok** (yalnızca localhost'a güveniyor).
+- Eklenti: dinleme adresi ayar kapalıyken `127.0.0.1`; IP filtresi var. 0.1.25 isteğe bağlı auth token (`Set Auth Token` menüsü / `FREECAD_MCP_TOKEN`) ve web sayfası kaynaklı isteklerin reddini ekler. Token şu an boş (yalnızca localhost'a güveniliyor).
 - Serbest kod: `execute_code`, `execute_code_async` (GUI, `exec`) ve `execute_code_headless` (`freecadcmd` alt süreci). Claude Code'da bu araçlar **izin istemeli** — `allow` listesine eklemeyin.
 - MCP paketi: dış ağ çağrısı yok; yalnızca localhost XML-RPC ve yerel `freecadcmd`.
 

@@ -49,7 +49,7 @@ Ayrıntılı kabul ölçütleri: `tasks/todo.md`.
 
 ### Faz F0b — FreeCAD MCP ✅ (2026-10-07, bkz. `docs/environment.md`)
 - [x] Sürüm kaydı, güvenlik incelemesi, 5 adımlı duman testi (`scanlab-mac/freecad_bridge/smoke_test_f0b.py`)
-- [ ] FreeCAD eklentisini freecad-mcp 0.1.25 ile eşle (kullanıcı onayı bekliyor)
+- [x] FreeCAD eklentisi freecad-mcp 0.1.25 ile eşlendi (eski sürüm yedeklendi)
 
 ### Sonraki fazlar (indeks)
 F2 viewer/ölçüm/not · F2b Mac köprüsü · F3 mesh işleme + GLB + baskı ·
