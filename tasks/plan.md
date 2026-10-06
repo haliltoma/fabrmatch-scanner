@@ -47,8 +47,12 @@ Ayrıntılı kabul ölçütleri: `tasks/todo.md`.
 
 ### Kontrol noktası F1 (İNSAN): Xcode kurulumu, `xcodegen`, cihazda derleme + PRD M3 kabul testleri
 
+### Faz F0b — FreeCAD MCP ✅ (2026-10-07, bkz. `docs/environment.md`)
+- [x] Sürüm kaydı, güvenlik incelemesi, 5 adımlı duman testi (`scanlab-mac/freecad_bridge/smoke_test_f0b.py`)
+- [ ] FreeCAD eklentisini freecad-mcp 0.1.25 ile eşle (kullanıcı onayı bekliyor)
+
 ### Sonraki fazlar (indeks)
-F0b FreeCAD MCP duman testi · F2 viewer/ölçüm/not · F2b Mac köprüsü · F3 mesh işleme + GLB + baskı ·
+F2 viewer/ölçüm/not · F2b Mac köprüsü · F3 mesh işleme + GLB + baskı ·
 F3b Python geometri motoru + MCP · F4 RoomPlan/ObjectCapture/nokta bulutu/TrueDepth ·
 F5 doku/AR/web/iCloud · F5b ajan · F5c FreeCAD · F6 splat/hibrit.
 

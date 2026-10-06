@@ -1,0 +1,5 @@
+# Exchange files are generated per run (PRD M28); keep only the folder skeleton.
+*
+!.gitignore
+!*/
+!*/.gitkeep
