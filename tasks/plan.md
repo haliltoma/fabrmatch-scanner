@@ -63,6 +63,17 @@ Ayrım (PRD §4.7): `scanlab/core` MCP'den bağımsız; `scanlab/mcp_server` inc
 - [x] B8: MCP sunucusu (stdio): araçlar + kaynaklar + `inspect_scan_quality` / `make_print_ready` prompt'ları; yol kısıtı, kod çalıştırma yok
 ### Kontrol noktası F3b ✅ (39 pytest + stdio e2e): pytest yeşil; MCP üzerinden `mesh_analyze → mesh_repair → mesh_analyze` zinciri sürüm geçmişine yazılır (M25 kabul)
 
+### Faz F5b — Baskıya hazırlama hattı (M14, M26, M27) · Yazıcı: Creality K2 Pro
+Kaynak: OrcaSlicer 2.4.2 hazır profili `Creality K2 Pro 0.4 nozzle` (300×300×300 mm, 0,4 sertleştirilmiş çelik, Klipper).
+- [x] P1: Yazıcı profili (YAML) + yükleyici; FDM varsayılanları PRD §2.1, malzeme→Orca filament eşlemesi
+- [x] P2: `print_check` (watertight/manifold, tabla hacmine sığma, min duvar, ince detay, çıkıntı alanı, tabla temas alanı)
+- [x] P3: `print_orient_optimize` (eksen + gövde yüzeyi adayları, puanlama, tablaya oturtma → yeni sürüm)
+- [x] P4: `print_slice_dry_run` (OrcaSlicer CLI, profil düzleştirme, delik/fil ayağı telafisi, G-code'dan süre/filament)
+- [x] P5: MCP araçları + `scanlab://printers` + `make_print_ready` prompt'unun yazıcıya bağlanması
+- [x] P6b: `print_flatten_base` (FR-14.4) — benchmark'ta gürültülü tabanın OrcaSlicer'ı düşürdüğü bulundu
+- [x] P6: Ajan playbook'u (M26 §26.7) + 5 parçalık benchmark (düz plaka, delikli braket, mil, ince duvarlı kutu, organik tutamak) ve sabit hat sonuç tablosu
+### Kontrol noktası F5b — sabit hat ✅ 5/5 (`scanlab-mac/benchmarks/results.md`), ajan denemesi bekliyor: benchmark'ta 5 parça watertight + dilimleme provası başarılı; gerçek Claude oturumunda ajan denemesi (İNSAN)
+
 ### Sonraki fazlar (indeks)
 F2 viewer/ölçüm/not · F2b Mac köprüsü · F3 mesh işleme + GLB + baskı ·
 F3b Python geometri motoru + MCP · F4 RoomPlan/ObjectCapture/nokta bulutu/TrueDepth ·

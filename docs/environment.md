@@ -10,7 +10,7 @@ Son doğrulama: 2026-10-07 · Sonuç: **GEÇTİ (5/5)** · Rapor: `scanlab-mac/c
 | FreeCAD eklentisi | `FreeCADMCP` **0.1.25**, protokol 1 (neka-nat/freecad-mcp etiket `v0.1.25`, commit `d6bbe4b`) | `~/Library/Application Support/FreeCAD/v1-1/Mod/FreeCADMCP`; eski sürümün yedeği `…/v1-1/FreeCADMCP.backup-20261007-005125` |
 | MCP sunucusu | `freecad-mcp==0.1.25` (PyPI, `uvx`) | Claude Code: proje `.mcp.json`; Claude Desktop: `claude_desktop_config.json` — ikisi de `==0.1.25` ile sabit |
 | RPC köprüsü | XML-RPC `127.0.0.1:9875`, `remote_enabled=false`, `allowed_ips=127.0.0.1`, `auto_start_rpc=true` | |
-| Dilimleyici | OrcaSlicer (`/Applications/OrcaSlicer.app`), CLI çalışıyor; Claude Desktop'ta `orcaslicer-mcp` de tanımlı | PRD'deki PrusaSlicer/Cura yerine |
+| Dilimleyici | OrcaSlicer **2.4.2** (`/Applications/OrcaSlicer.app`), başsız CLI dilimleme doğrulandı (`--slice 0 --load-settings machine;process --load-filaments`), sistem profilleri `inherits` zinciri düzleştirilerek kullanılıyor; hata ayrıntısı CLI'da yalnızca "run found error"; Claude Desktop'ta `orcaslicer-mcp` de tanımlı | PRD'deki PrusaSlicer/Cura yerine |
 | Swift | 6.2.4 (yalnızca Command Line Tools, Xcode yok) | iOS hedefi derlenemiyor |
 
 ## Güvenlik incelemesi (PRD §28.7)
@@ -36,3 +36,12 @@ uvx --from freecad-mcp==0.1.25 python scanlab-mac/freecad_bridge/smoke_test_f0b.
 - `create_object` boolean bağlantıları (Base/Tool) desteklemiyor; `Part::Cut` vb. için sabit şablon betik gerekli → kendi `cad_*` araçlarımız (Seçenek B) için gerekçe.
 - FreeCAD 1.1'de `Part::Cut` sonucu `Compound` döner; doğrulamada `Shape.Solids` kullanılmalı.
 - Açık konu: eklentiyi 0.1.25 ile eşleştirmek (sürüm uyarısı).
+
+## Yazıcı
+| | |
+|---|---|
+| Model | Creality K2 Pro, 0,4 mm sertleştirilmiş çelik nozul, Klipper |
+| Tabla | 300 × 300 × 300 mm (OrcaSlicer preset `Creality K2 Pro 0.4 nozzle`) |
+| Varsayılan işlem | `0.20mm Standard @Creality K2 Pro 0.4 nozzle` |
+| Telafiler | delik 0,1 mm, fil ayağı 0,15 mm — **kalibre edilmedi** |
+| Profil | `scanlab-mac/scanlab/core/printers/creality_k2_pro.yaml` |

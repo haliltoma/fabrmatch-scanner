@@ -1,0 +1,27 @@
+# Creality K2 Pro, 0.4 mm nozzle (PRD §2.1 FDM defaults).
+# Machine limits come from OrcaSlicer 2.4.2's system preset "Creality K2 Pro 0.4 nozzle".
+id: creality_k2_pro
+name: Creality K2 Pro (0.4)
+technology: fdm
+build_volume_mm: [300, 300, 300]
+nozzle_mm: 0.4
+layer_height_mm: 0.2
+min_wall_mm: 0.8            # ≈ 2 × nozzle
+min_feature_mm: 0.4
+overhang_angle_deg: 45      # from vertical; steeper needs support
+max_bridge_mm: 20
+min_bed_contact_mm2: 50
+# Dimensional compensation applied at slicing time (OrcaSlicer settings), never baked into the mesh.
+# Uncalibrated defaults: run the calibration wizard (PRD §2.1) and update these.
+hole_compensation_mm: 0.1   # → xy_hole_compensation
+elephant_foot_mm: 0.15      # → elefant_foot_compensation (Orca's spelling)
+calibrated: false
+default_material: PLA
+materials:
+  PLA:  {orca_filament: "Creality Generic PLA @K2-all",  shrinkage_pct: 0.3, density_g_cm3: 1.24}
+  PETG: {orca_filament: "Creality Generic PETG @K2-all", shrinkage_pct: 0.4, density_g_cm3: 1.27}
+  ABS:  {orca_filament: "Creality Generic ABS @K2-all",  shrinkage_pct: 0.7, density_g_cm3: 1.04}
+  ASA:  {orca_filament: "Creality Generic ASA @K2-all",  shrinkage_pct: 0.6, density_g_cm3: 1.07}
+orca:
+  machine: "Creality K2 Pro 0.4 nozzle"
+  process: "0.20mm Standard @Creality K2 Pro 0.4 nozzle"

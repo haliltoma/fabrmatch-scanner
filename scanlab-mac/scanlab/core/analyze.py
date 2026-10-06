@@ -30,20 +30,30 @@ def loop_perimeter(mesh: trimesh.Trimesh, loop_vertices: np.ndarray) -> float:
     return float(np.linalg.norm(seg[:, 0] - seg[:, 1], axis=1).sum())
 
 
-def wall_thickness(mesh: trimesh.Trimesh, samples: int = 400, seed: int = 0) -> dict | None:
-    """Estimates wall thickness by casting rays inward from surface samples (watertight meshes only)."""
+def wall_thickness(mesh: trimesh.Trimesh, samples: int = 400, seed: int = 0,
+                   noise_floor_mm: float = 0.1) -> dict | None:
+    """Estimates wall thickness by casting rays inward from surface samples (watertight meshes only).
+
+    Scanned surfaces are noisy: a ray along a jittered face normal often clips the neighbouring
+    face and reports ~0 mm. So the direction is the smoothed (vertex-averaged) normal, rays start
+    `noise_floor_mm` inside the surface, and only hits on the opposite skin count.
+    """
     if not mesh.is_watertight or len(mesh.faces) == 0:
         return None
     rng = np.random.default_rng(seed)
     points, face_idx = trimesh.sample.sample_surface(mesh, samples, seed=rng)
-    normals = mesh.face_normals[face_idx]
-    origins = points - normals * 1e-4
-    locations, ray_idx, _ = mesh.ray.intersects_location(origins, -normals, multiple_hits=False)
-    if len(ray_idx) == 0:
+    smooth = mesh.vertex_normals[mesh.faces[face_idx]].mean(axis=1)
+    smooth /= np.linalg.norm(smooth, axis=1, keepdims=True)
+    origins = points - smooth * noise_floor_mm
+    locations, ray_idx, tri_idx = mesh.ray.intersects_location(origins, -smooth, multiple_hits=False)
+    # Only hits on the opposite skin (normals roughly anti-parallel); rays near an edge otherwise
+    # hit the adjacent perpendicular face and report a false "thin wall".
+    opposite = np.einsum("ij,ij->i", mesh.face_normals[tri_idx], smooth[ray_idx]) < -0.7
+    if not opposite.any():
         return None
-    d = np.linalg.norm(locations - origins[ray_idx], axis=1)
+    d = np.linalg.norm(locations[opposite] - origins[ray_idx[opposite]], axis=1) + noise_floor_mm
     return {"min_mm": float(d.min()), "p5_mm": float(np.percentile(d, 5)), "median_mm": float(np.median(d)),
-            "samples": int(len(d))}
+            "samples": int(len(d)), "noise_floor_mm": noise_floor_mm}
 
 
 def analyze(mesh: trimesh.Trimesh, thickness_samples: int = 400) -> dict:

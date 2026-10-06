@@ -13,6 +13,7 @@ Native iOS LiDAR 3D scanner. Spec: `docs/3D-Tarayici-PRD.md`. Plan & status: `ta
 ## Commands
 - Tests (works with Command Line Tools only): `scripts/test.sh`
 - Mac engine tests: `cd scanlab-mac && uv run pytest`
+- Print-prep baseline benchmark: `cd scanlab-mac && uv run python benchmarks/run_baseline.py` (needs OrcaSlicer)
 - FreeCAD smoke test: `uvx --from freecad-mcp==0.1.25 python scanlab-mac/freecad_bridge/smoke_test_f0b.py`
 - App: `brew install xcodegen && xcodegen && open ScanLab.xcodeproj` (needs full Xcode)
 

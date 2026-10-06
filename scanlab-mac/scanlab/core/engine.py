@@ -11,12 +11,15 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable
+
+import numpy as np
 from dataclasses import dataclass
 
 import trimesh
 
 from . import analyze as _analyze
-from . import deviation, mesh_io, render, repair
+from . import base, deviation, mesh_io, orca, orient, printability, render, repair
+from .printer import DEFAULT_PRINTER, load_profile
 from .export import export as _export
 from .versions import Version, VersionStore
 from .workspace import Workspace
@@ -71,14 +74,26 @@ class Engine:
         mesh = self.store.load(v)
         heat = None
         if heatmap_against:
-            ref = self.store.load(self.store.resolve(project_id, heatmap_against))
-            _, heat, _ = trimesh.proximity.closest_point(ref, mesh.triangles_center)
+            ref = self.load_in_raw_frame(self.store.resolve(project_id, heatmap_against))
+            centers = trimesh.transform_points(mesh.triangles_center, self.frame_to_raw(v))
+            _, heat, _ = trimesh.proximity.closest_point(ref, centers)
         return render.render_views(mesh, views, size_px=size_px, heatmap=heat)
 
     def compare(self, project_id: str, version_a: str, version_b: str, samples: int = 20_000) -> dict:
-        a = self.store.load(self.store.resolve(project_id, version_a))
-        b = self.store.load(self.store.resolve(project_id, version_b))
+        """Compares in the raw scan's frame, so re-oriented versions compare by shape, not placement."""
+        a = self.load_in_raw_frame(self.store.resolve(project_id, version_a))
+        b = self.load_in_raw_frame(self.store.resolve(project_id, version_b))
         return deviation.compare(a, b, samples=samples)
+
+    @staticmethod
+    def frame_to_raw(v: Version) -> np.ndarray:
+        """Rigid transform mapping this version's coordinates back to the raw scan's frame."""
+        return np.asarray(v.metrics.get("frame_to_raw", np.eye(4)), dtype=float)
+
+    def load_in_raw_frame(self, v: Version) -> trimesh.Trimesh:
+        m = self.store.load(v)
+        m.apply_transform(self.frame_to_raw(v))
+        return m
 
     def raw_version(self, project_id: str) -> Version:
         return self.store.versions(project_id)[0]
@@ -91,9 +106,16 @@ class Engine:
         after, report = op(before)
         if len(after.faces) == 0:
             raise ValueError(f"{tool} produced an empty mesh")
+        # Rigid operations (re-orientation) report their transform; measure shape change in a common frame.
+        rigid = np.asarray(report.pop("rigid_transform", np.eye(4)), dtype=float)
+        frame = self.frame_to_raw(parent) @ np.linalg.inv(rigid)
+        after_in_parent = after.copy()
+        after_in_parent.apply_transform(np.linalg.inv(rigid))
+        after_in_raw = after.copy()
+        after_in_raw.apply_transform(frame)
         raw = self.store.load(self.raw_version(project_id))
-        dev_parent = deviation.compare(before, after, samples=5_000)
-        dev_raw = deviation.compare(raw, after, samples=5_000)
+        dev_parent = deviation.compare(before, after_in_parent, samples=5_000)
+        dev_raw = deviation.compare(raw, after_in_raw, samples=5_000)
         if max_deviation_mm is not None and dev_raw["p95_mm"] > max_deviation_mm:
             self.store.log(project_id, "rejected", {"tool": tool, "params": params, "p95_mm": dev_raw["p95_mm"]})
             raise DeviationBudgetExceeded(dev_raw["p95_mm"], max_deviation_mm)
@@ -101,7 +123,8 @@ class Engine:
         stored = None
         if not dry_run:
             stored = self.store.add_version(project_id, after, tool, params,
-                                            {**metrics, "deviation_from_raw": dev_raw}, parent.id)
+                                            {**metrics, "deviation_from_raw": dev_raw,
+                                             "frame_to_raw": np.round(frame, 9).tolist()}, parent.id)
         return OperationResult(stored, report, metrics, dev_parent, dev_raw, stored is not None)
 
     def remove_small_components(self, project_id: str, min_faces: int = 50, min_extent_mm: float = 0.0,
@@ -124,6 +147,34 @@ class Engine:
     def decimate(self, project_id: str, target_faces: int, **kw) -> OperationResult:
         return self.apply(project_id, "mesh_decimate", {"target_faces": target_faces},
                           lambda m: repair.decimate(m, target_faces), **kw)
+
+    # Print preparation (M14, M26)
+    def print_check(self, project_id: str, version_id: str | None = None, printer: str = DEFAULT_PRINTER,
+                    material: str | None = None) -> dict:
+        profile = load_profile(printer)
+        v = self.store.resolve(project_id, version_id)
+        return {"version_id": v.id, **printability.print_check(self.store.load(v), profile, profile.material(material))}
+
+    def orient_for_print(self, project_id: str, printer: str = DEFAULT_PRINTER, **kw) -> OperationResult:
+        profile = load_profile(printer)
+        return self.apply(project_id, "print_orient_optimize", {"printer": printer},
+                          lambda m: orient.optimize(m, profile.overhang_angle_deg, bed_tolerance_mm=printability.bed_tolerance(profile)), **kw)
+
+    def flatten_base(self, project_id: str, depth_mm: float | None = None, **kw) -> OperationResult:
+        return self.apply(project_id, "print_flatten_base", {"depth_mm": depth_mm},
+                          lambda m: base.flatten_base(m, depth_mm), **kw)
+
+    def slice_dry_run(self, project_id: str, version_id: str | None = None, printer: str = DEFAULT_PRINTER,
+                      material: str | None = None, infill_pct: int | None = None, wall_loops: int | None = None,
+                      supports: bool = False) -> dict:
+        profile = load_profile(printer)
+        v = self.store.resolve(project_id, version_id)
+        mesh = orient.place_on_bed(self.store.load(v))
+        result = orca.slice_mesh(mesh, profile, profile.material(material), self.ws.reports / project_id,
+                                 infill_pct=infill_pct, wall_loops=wall_loops, supports=supports)
+        self.store.log(project_id, "slice_dry_run", {"version_id": v.id, **{k: result.get(k) for k in
+                       ("time", "filament_g", "layers", "settings")}})
+        return {"version_id": v.id, **result}
 
     def export(self, project_id: str, filename: str, version_id: str | None = None, unit: str = "mm") -> dict:
         v = self.store.resolve(project_id, version_id)
