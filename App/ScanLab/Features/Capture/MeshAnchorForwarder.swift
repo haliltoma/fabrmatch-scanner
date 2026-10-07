@@ -16,11 +16,22 @@ nonisolated final class MeshAnchorForwarder: NSObject, ARSessionDelegate, @unche
     private var lastCamera: (position: SIMD3<Float>, time: TimeInterval)?
     private var lastStatusTime: TimeInterval = 0
     private var maxRange: Float = 5
+    private var keyframes: KeyframePolicy
+    private let captureWriter: CaptureWriter?
+    private var recording = false
 
-    init(store: MeshStore, onStatus: @escaping @Sendable (FrameStatus) -> Void, onInterruption: @escaping @Sendable (Bool) -> Void) {
+    init(store: MeshStore, captureWriter: CaptureWriter?, quality: QualityProfile,
+         onStatus: @escaping @Sendable (FrameStatus) -> Void, onInterruption: @escaping @Sendable (Bool) -> Void) {
         self.store = store
+        self.captureWriter = captureWriter
+        self.keyframes = KeyframePolicy(profile: quality)
         self.onStatus = onStatus
         self.onInterruption = onInterruption
+    }
+
+    /// Raw depth keyframes are only recorded while scanning, not while paused or relocalizing.
+    func setRecording(_ on: Bool) {
+        queue.async { self.recording = on }
     }
 
     func setMaxRange(_ meters: Float) {
@@ -68,9 +79,22 @@ nonisolated final class MeshAnchorForwarder: NSObject, ARSessionDelegate, @unche
             speed = simd_distance(position, last.position) / Float(t - last.time)
         }
         lastCamera = (position, t)
+        recordKeyframeIfNeeded(frame)
         guard t - lastStatusTime >= 0.2 else { return }
         lastStatusTime = t
         onStatus(FrameStatus(warning: Self.warning(for: frame.camera.trackingState, speed: speed), speed: speed, cameraPosition: position))
+    }
+
+    /// PRD goal 3: keep raw depth so the Mac can try every reconstruction algorithm later.
+    private func recordKeyframeIfNeeded(_ frame: ARFrame) {
+        guard recording, let writer = captureWriter else { return }
+        let normal: Bool
+        if case .normal = frame.camera.trackingState { normal = true } else { normal = false }
+        guard keyframes.accept(pose: frame.camera.transform, time: frame.timestamp, trackingIsNormal: normal),
+              let depthFrame = frame.makeDepthFrame() else { return }
+        Task.detached(priority: .utility) {
+            try? await writer.append(depthFrame)
+        }
     }
 
     /// FR-3.4 guidance messages.

@@ -23,7 +23,7 @@ from scanlab.core.versions import NotFound
 from scanlab.core.workspace import PathNotAllowed, Workspace
 
 INSTRUCTIONS = """ScanLab geometry engine for 3D scans of engineering parts (units: mm).
-Workflow: mesh_import → mesh_analyze + mesh_render_views → one repair/cleanup tool at a time →
+Workflow: reconstruct_best (raw capture) or mesh_import (mesh file) → mesh_analyze + mesh_render_views → one repair/cleanup tool at a time →
 re-analyze and compare (deviation_compare / deviation_from_raw) → export_asset.
 Every mutating tool stores a new version; the original scan is never overwritten; version_revert restores.
 Use dry_run=true to preview and max_deviation_mm to enforce the deviation budget against the raw scan.
@@ -103,6 +103,15 @@ def mesh_import(path: str, project_name: str | None = None, unit: Literal["mm", 
         v, metrics = engine().import_mesh(path, project_name, unit)
         return _json({"project_id": v.project_id, "version_id": v.id, "metrics": metrics})
     return _guard(run)
+
+
+@mcp.tool(annotations=WRITE)
+def reconstruct_best(path: str, project_name: str | None = None, algorithms: list[str] | None = None) -> str:
+    """Reconstruct a raw capture folder (capture.json + depth/*.sldf from the iPhone) with every algorithm
+    (TSDF at several voxel sizes, screened Poisson at several depths, ball pivoting), score each without
+    ground truth on held-out frames, and make the best one the project head. All candidates are kept as
+    versions. Takes ~10–60 s. `path` is relative to cad_exchange/in."""
+    return _guard(lambda: _json(engine().reconstruct(path, project_name, algorithms)))
 
 
 @mcp.tool(annotations=READ)

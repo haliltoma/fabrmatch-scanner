@@ -21,6 +21,7 @@ final class LiDARMeshCaptureMode: CaptureMode {
     let state: AsyncStream<CaptureState>
     let session = ARSession()
     let store = MeshStore()
+    let captureWriter: CaptureWriter
 
     private let stateContinuation: AsyncStream<CaptureState>.Continuation
     private let paths: ScanPaths
@@ -35,8 +36,10 @@ final class LiDARMeshCaptureMode: CaptureMode {
         self.paths = paths
         self.record = record
         (state, stateContinuation) = AsyncStream.makeStream(bufferingPolicy: .bufferingNewest(8))
+        captureWriter = CaptureWriter(directory: paths.capture, sensor: .lidar)
         let interruptions = stateContinuation
-        let forwarder = MeshAnchorForwarder(store: store, onStatus: onStatus) { interrupted in
+        let forwarder = MeshAnchorForwarder(store: store, captureWriter: captureWriter, quality: record.qualityProfile,
+                                            onStatus: onStatus) { interrupted in
             interruptions.yield(interrupted ? .warning(.relocalizing) : .scanning)
         }
         self.forwarder = forwarder
@@ -82,10 +85,12 @@ final class LiDARMeshCaptureMode: CaptureMode {
             hasRun = true
         }
         runningSince = .now
+        forwarder?.setRecording(true)
         stateContinuation.yield(.scanning)
     }
 
     func pause() async {
+        forwarder?.setRecording(false)
         accumulateDuration()
         await saveWorldMap()
         session.pause()
@@ -96,10 +101,12 @@ final class LiDARMeshCaptureMode: CaptureMode {
     /// Writes changed chunks to `raw/mesh_chunks` (PRD §5.3 periodic autosave).
     @discardableResult
     func autosave() async throws -> Int {
-        try await store.flush(to: paths.meshChunks)
+        try await captureWriter.flush()
+        return try await store.flush(to: paths.meshChunks)
     }
 
     func finish() async throws -> ScanArtifact {
+        forwarder?.setRecording(false)
         accumulateDuration()
         await saveWorldMap()
         session.pause()
@@ -108,6 +115,7 @@ final class LiDARMeshCaptureMode: CaptureMode {
         record.stats = ScanStats(vertices: stats.vertexCount, triangles: stats.triangleCount, durationSec: activeDuration.rounded())
         if !settings.keepRawData {
             try? FileManager.default.removeItem(at: paths.frames)
+            try? FileManager.default.removeItem(at: paths.capture)
         }
         let files = await store.snapshot().map { MeshStore.fileURL(for: $0.id, in: paths.meshChunks) }
         stateContinuation.yield(.finished)

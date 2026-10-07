@@ -7,12 +7,14 @@ Native iOS LiDAR 3D scanner. Spec: `docs/3D-Tarayici-PRD.md`. Plan & status: `ta
   `ScanLabCore` (models, ProjectStore, MeshStore, MeshMerger, thermal policy), `ScanLabExport` (STL/PLY/OBJ + readers), `ScanLabSensor` (M22 rules).
 - `App/ScanLab/` — SwiftUI app, organized by feature (`Features/<Feature>/`). ARKit lives only here.
 - `scanlab-mac/` — Python 3.12 (uv) geometry engine `scanlab/core` (MCP-independent) + thin `scanlab/mcp_server` (PRD M25). Engine unit: mm.
-- `fixtures/` — cross-language golden files shared by Swift and Python tests.
+- `scanlab-mac/scanlab/recon/` — raw capture format (SLDF), capture simulator, multi-algorithm reconstruction + blind selection (held-out depth RMSE).
+- `fixtures/` — cross-language golden files shared by Swift and Python tests (`chunk_v1.bin`, `frame_v1.sldf`).
 - `project.yml` — XcodeGen spec; never hand-edit `.xcodeproj` (it is git-ignored).
 
 ## Commands
 - Tests (works with Command Line Tools only): `scripts/test.sh`
 - Mac engine tests: `cd scanlab-mac && uv run pytest`
+- Reconstruction benchmark (algorithms vs CAD, selector regret): `cd scanlab-mac && uv run python benchmarks/run_recon.py`
 - Print-prep baseline benchmark: `cd scanlab-mac && uv run python benchmarks/run_baseline.py` (needs OrcaSlicer)
 - FreeCAD smoke test: `uvx --from freecad-mcp==0.1.25 python scanlab-mac/freecad_bridge/smoke_test_f0b.py`
 - App: `brew install xcodegen && xcodegen && open ScanLab.xcodeproj` (needs full Xcode)

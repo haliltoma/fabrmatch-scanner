@@ -52,3 +52,15 @@ def test_fix_normals_reverts_inversion():
     out, report = repair.fix_normals(m)
     assert report["was_inverted"]
     assert not analyze.analyze(out)["inward_normals"]
+
+
+def test_wall_thickness_ignores_degenerate_normals():
+    """Regression: samples whose vertex normals cancel out produced NaN rays and crashed rtree."""
+    import trimesh
+    box = trimesh.creation.box((10, 10, 10))
+    # A zero-area sliver whose vertex normals cancel, glued onto a watertight box.
+    m = box.copy()
+    m.vertex_normals  # noqa: B018 — force computation
+    sliver = trimesh.Trimesh(m.vertices, np.vstack([m.faces, [[0, 0, 1]]]), process=False)
+    assert analyze.wall_thickness(box) is not None
+    analyze.wall_thickness(sliver)  # must not raise

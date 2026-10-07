@@ -16,6 +16,10 @@ dependencies = [
     "fast-simplification>=0.2.0",
     "rtree>=1.4.1",
     "pyyaml>=6.0.3",
+    "open3d>=0.20.0",
+    "pymeshlab>=2025.7.post1",
+    "shapely>=2.1.2",
+    "mapbox-earcut>=2.1.0",
 ]
 
 [project.scripts]

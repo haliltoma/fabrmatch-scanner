@@ -1,0 +1,708 @@
+[
+ {
+  "sensor": "truedepth",
+  "part": "flat_plate",
+  "seconds": 40.7,
+  "pick": "tsdf_poisson_0.5mm",
+  "pick_truth_f": 0.9998,
+  "pick_chamfer_mm": 0.066,
+  "oracle": "tsdf_poisson_0.5mm",
+  "oracle_truth_f": 0.9998,
+  "regret": 0.0,
+  "candidates": {
+   "tsdf_0.5mm": {
+    "blind_f": 0.902,
+    "depth_rmse": 0.8411,
+    "truth_f": 0.6835,
+    "chamfer_mm": 0.436,
+    "error": null,
+    "seconds": 11.86
+   },
+   "tsdf_1mm": {
+    "blind_f": 0.8956,
+    "depth_rmse": 0.8121,
+    "truth_f": 0.9329,
+    "chamfer_mm": 0.113,
+    "error": null,
+    "seconds": 1.16
+   },
+   "tsdf_2mm": {
+    "blind_f": 0.882,
+    "depth_rmse": 0.8853,
+    "truth_f": 0.9057,
+    "chamfer_mm": 0.15,
+    "error": null,
+    "seconds": 0.63
+   },
+   "poisson_d8": {
+    "blind_f": 0.9532,
+    "depth_rmse": 0.801,
+    "truth_f": 0.9573,
+    "chamfer_mm": 0.142,
+    "error": null,
+    "seconds": 6.23
+   },
+   "poisson_d9": {
+    "blind_f": 0.9778,
+    "depth_rmse": 0.8379,
+    "truth_f": 0.9259,
+    "chamfer_mm": 0.158,
+    "error": null,
+    "seconds": 23.53
+   },
+   "poisson_d10": {
+    "blind_f": 0.967,
+    "depth_rmse": 0.8283,
+    "truth_f": 0.9401,
+    "chamfer_mm": 0.15,
+    "error": null,
+    "seconds": 12.61
+   },
+   "tsdf_poisson_0.5mm": {
+    "blind_f": 0.8997,
+    "depth_rmse": 0.7992,
+    "truth_f": 0.9998,
+    "chamfer_mm": 0.066,
+    "error": null,
+    "seconds": 9.23
+   },
+   "ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 2628 of 64017 faces; repair refused",
+    "seconds": 14.35
+   }
+  }
+ },
+ {
+  "sensor": "truedepth",
+  "part": "holed_bracket",
+  "seconds": 36.6,
+  "pick": "tsdf_poisson_0.5mm",
+  "pick_truth_f": 0.9878,
+  "pick_chamfer_mm": 0.12,
+  "oracle": "tsdf_poisson_0.5mm",
+  "oracle_truth_f": 0.9878,
+  "regret": 0.0,
+  "candidates": {
+   "tsdf_0.5mm": {
+    "blind_f": 0.9246,
+    "depth_rmse": 0.8285,
+    "truth_f": 0.7272,
+    "chamfer_mm": 0.503,
+    "error": null,
+    "seconds": 9.15
+   },
+   "tsdf_1mm": {
+    "blind_f": 0.9011,
+    "depth_rmse": 0.8316,
+    "truth_f": 0.8607,
+    "chamfer_mm": 0.253,
+    "error": null,
+    "seconds": 2.52
+   },
+   "tsdf_2mm": {
+    "blind_f": 0.7747,
+    "depth_rmse": 1.1557,
+    "truth_f": 0.3835,
+    "chamfer_mm": 1.007,
+    "error": null,
+    "seconds": 0.41
+   },
+   "poisson_d8": {
+    "blind_f": 0.9425,
+    "depth_rmse": 0.9945,
+    "truth_f": 0.9091,
+    "chamfer_mm": 0.204,
+    "error": null,
+    "seconds": 12.55
+   },
+   "poisson_d9": {
+    "blind_f": 0.9452,
+    "depth_rmse": 1.0046,
+    "truth_f": 0.9092,
+    "chamfer_mm": 0.206,
+    "error": null,
+    "seconds": 15.3
+   },
+   "poisson_d10": {
+    "blind_f": 0.9395,
+    "depth_rmse": 0.9815,
+    "truth_f": 0.9185,
+    "chamfer_mm": 0.2,
+    "error": null,
+    "seconds": 18.38
+   },
+   "tsdf_poisson_0.5mm": {
+    "blind_f": 0.9154,
+    "depth_rmse": 0.8005,
+    "truth_f": 0.9878,
+    "chamfer_mm": 0.12,
+    "error": null,
+    "seconds": 12.63
+   },
+   "ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 8042 of 102725 faces; repair refused",
+    "seconds": 16.69
+   }
+  }
+ },
+ {
+  "sensor": "truedepth",
+  "part": "stepped_shaft",
+  "seconds": 21.9,
+  "pick": "tsdf_poisson_0.5mm",
+  "pick_truth_f": 0.9982,
+  "pick_chamfer_mm": 0.145,
+  "oracle": "tsdf_poisson_0.5mm",
+  "oracle_truth_f": 0.9982,
+  "regret": 0.0,
+  "candidates": {
+   "tsdf_0.5mm": {
+    "blind_f": 0.9209,
+    "depth_rmse": 0.8533,
+    "truth_f": 0.9819,
+    "chamfer_mm": 0.151,
+    "error": null,
+    "seconds": 1.98
+   },
+   "tsdf_1mm": {
+    "blind_f": 0.905,
+    "depth_rmse": 0.8631,
+    "truth_f": 0.9709,
+    "chamfer_mm": 0.161,
+    "error": null,
+    "seconds": 0.69
+   },
+   "tsdf_2mm": {
+    "blind_f": 0.8224,
+    "depth_rmse": 1.0293,
+    "truth_f": 0.8145,
+    "chamfer_mm": 0.299,
+    "error": null,
+    "seconds": 0.44
+   },
+   "poisson_d8": {
+    "blind_f": 0.9276,
+    "depth_rmse": 0.8806,
+    "truth_f": 0.9552,
+    "chamfer_mm": 0.205,
+    "error": null,
+    "seconds": 7.01
+   },
+   "poisson_d9": {
+    "blind_f": 0.9266,
+    "depth_rmse": 0.881,
+    "truth_f": 0.9592,
+    "chamfer_mm": 0.204,
+    "error": null,
+    "seconds": 9.41
+   },
+   "poisson_d10": {
+    "blind_f": 0.9263,
+    "depth_rmse": 0.8759,
+    "truth_f": 0.9599,
+    "chamfer_mm": 0.202,
+    "error": null,
+    "seconds": 10.28
+   },
+   "tsdf_poisson_0.5mm": {
+    "blind_f": 0.9082,
+    "depth_rmse": 0.8431,
+    "truth_f": 0.9982,
+    "chamfer_mm": 0.145,
+    "error": null,
+    "seconds": 6.54
+   },
+   "ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "IndexError: list index out of range",
+    "seconds": 1.57
+   }
+  }
+ },
+ {
+  "sensor": "truedepth",
+  "part": "thin_walled_box",
+  "seconds": 64.1,
+  "pick": "tsdf_poisson_0.5mm",
+  "pick_truth_f": 0.9894,
+  "pick_chamfer_mm": 0.149,
+  "oracle": "tsdf_poisson_0.5mm",
+  "oracle_truth_f": 0.9894,
+  "regret": 0.0,
+  "candidates": {
+   "tsdf_0.5mm": {
+    "blind_f": 0.8481,
+    "depth_rmse": 1.5593,
+    "truth_f": 0.6983,
+    "chamfer_mm": 0.942,
+    "error": null,
+    "seconds": 15.25
+   },
+   "tsdf_1mm": {
+    "blind_f": 0.7118,
+    "depth_rmse": 1.7052,
+    "truth_f": 0.3384,
+    "chamfer_mm": 1.584,
+    "error": null,
+    "seconds": 3.47
+   },
+   "tsdf_2mm": {
+    "blind_f": 0.3994,
+    "depth_rmse": 2.0215,
+    "truth_f": 0.1596,
+    "chamfer_mm": 2.777,
+    "error": null,
+    "seconds": 1.03
+   },
+   "poisson_d8": {
+    "blind_f": 0.9186,
+    "depth_rmse": 1.0775,
+    "truth_f": 0.8666,
+    "chamfer_mm": 0.291,
+    "error": null,
+    "seconds": 19.0
+   },
+   "poisson_d9": {
+    "blind_f": 0.9185,
+    "depth_rmse": 1.0738,
+    "truth_f": 0.864,
+    "chamfer_mm": 0.295,
+    "error": null,
+    "seconds": 22.03
+   },
+   "poisson_d10": {
+    "blind_f": 0.913,
+    "depth_rmse": 1.0726,
+    "truth_f": 0.8647,
+    "chamfer_mm": 0.293,
+    "error": null,
+    "seconds": 38.83
+   },
+   "tsdf_poisson_0.5mm": {
+    "blind_f": 0.9688,
+    "depth_rmse": 0.9164,
+    "truth_f": 0.9894,
+    "chamfer_mm": 0.149,
+    "error": null,
+    "seconds": 19.38
+   },
+   "ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 5106 of 53191 faces; repair refused",
+    "seconds": 25.5
+   }
+  }
+ },
+ {
+  "sensor": "truedepth",
+  "part": "organic_handle",
+  "seconds": 79.6,
+  "pick": "poisson_d10",
+  "pick_truth_f": 0.7211,
+  "pick_chamfer_mm": 0.879,
+  "oracle": "poisson_d10",
+  "oracle_truth_f": 0.7211,
+  "regret": 0.0,
+  "candidates": {
+   "tsdf_0.5mm": {
+    "blind_f": 0.7793,
+    "depth_rmse": 1.4338,
+    "truth_f": 0.6055,
+    "chamfer_mm": 1.495,
+    "error": null,
+    "seconds": 31.19
+   },
+   "tsdf_1mm": {
+    "blind_f": 0.7518,
+    "depth_rmse": 1.408,
+    "truth_f": 0.5652,
+    "chamfer_mm": 1.583,
+    "error": null,
+    "seconds": 0.47
+   },
+   "tsdf_2mm": {
+    "blind_f": 0.668,
+    "depth_rmse": 1.4789,
+    "truth_f": 0.526,
+    "chamfer_mm": 1.61,
+    "error": null,
+    "seconds": 0.4
+   },
+   "poisson_d8": {
+    "blind_f": 0.8514,
+    "depth_rmse": 1.4071,
+    "truth_f": 0.711,
+    "chamfer_mm": 0.912,
+    "error": null,
+    "seconds": 24.15
+   },
+   "poisson_d9": {
+    "blind_f": 0.8724,
+    "depth_rmse": 1.403,
+    "truth_f": 0.7114,
+    "chamfer_mm": 0.851,
+    "error": null,
+    "seconds": 43.39
+   },
+   "poisson_d10": {
+    "blind_f": 0.8775,
+    "depth_rmse": 1.3513,
+    "truth_f": 0.7211,
+    "chamfer_mm": 0.879,
+    "error": null,
+    "seconds": 16.81
+   },
+   "tsdf_poisson_0.5mm": {
+    "blind_f": 0.796,
+    "depth_rmse": 1.4176,
+    "truth_f": 0.6812,
+    "chamfer_mm": 0.999,
+    "error": null,
+    "seconds": 36.67
+   },
+   "ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 1418 of 56747 faces; repair refused",
+    "seconds": 7.45
+   }
+  }
+ },
+ {
+  "sensor": "lidar",
+  "part": "flat_plate",
+  "seconds": 0.2,
+  "pick": "\u2014",
+  "pick_truth_f": null,
+  "pick_chamfer_mm": null,
+  "oracle": "\u2014",
+  "oracle_truth_f": null,
+  "regret": null,
+  "failed": "no object found above the table: with this sensor's noise the table band is 16.6 mm, so thinner parts cannot be separated from the table (use TrueDepth / move closer, or stand the part on a riser)",
+  "candidates": {}
+ },
+ {
+  "sensor": "lidar",
+  "part": "holed_bracket",
+  "seconds": 7.5,
+  "pick": "tsdf_3mm",
+  "pick_truth_f": 0.6555,
+  "pick_chamfer_mm": 3.533,
+  "oracle": "tsdf_2mm",
+  "oracle_truth_f": 0.7187,
+  "regret": 0.0632,
+  "candidates": {
+   "tsdf_2mm": {
+    "blind_f": 0.9449,
+    "depth_rmse": 7.2312,
+    "truth_f": 0.7187,
+    "chamfer_mm": 2.885,
+    "error": null,
+    "seconds": 0.29
+   },
+   "tsdf_3mm": {
+    "blind_f": 0.9527,
+    "depth_rmse": 6.4295,
+    "truth_f": 0.6555,
+    "chamfer_mm": 3.533,
+    "error": null,
+    "seconds": 0.17
+   },
+   "tsdf_5mm": {
+    "blind_f": 0.928,
+    "depth_rmse": 7.7932,
+    "truth_f": 0.4113,
+    "chamfer_mm": 4.455,
+    "error": null,
+    "seconds": 0.12
+   },
+   "poisson_d7": {
+    "blind_f": 0.9639,
+    "depth_rmse": 9.5651,
+    "truth_f": 0.5682,
+    "chamfer_mm": 3.754,
+    "error": null,
+    "seconds": 1.77
+   },
+   "poisson_d8": {
+    "blind_f": 0.9638,
+    "depth_rmse": 9.5025,
+    "truth_f": 0.5656,
+    "chamfer_mm": 3.839,
+    "error": null,
+    "seconds": 2.69
+   },
+   "poisson_d9": {
+    "blind_f": 0.9609,
+    "depth_rmse": 9.5025,
+    "truth_f": 0.5639,
+    "chamfer_mm": 3.843,
+    "error": null,
+    "seconds": 3.46
+   },
+   "tsdf_poisson_2mm": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "crashed (native abort)",
+    "seconds": 0.0
+   },
+   "ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 178 of 1272 faces; repair refused",
+    "seconds": 0.2
+   }
+  }
+ },
+ {
+  "sensor": "lidar",
+  "part": "stepped_shaft",
+  "seconds": 8.0,
+  "pick": "tsdf_3mm",
+  "pick_truth_f": 0.9581,
+  "pick_chamfer_mm": 0.689,
+  "oracle": "tsdf_3mm",
+  "oracle_truth_f": 0.9581,
+  "regret": 0.0,
+  "candidates": {
+   "tsdf_2mm": {
+    "blind_f": 0.9595,
+    "depth_rmse": 7.5474,
+    "truth_f": 0.904,
+    "chamfer_mm": 0.96,
+    "error": null,
+    "seconds": 0.23
+   },
+   "tsdf_3mm": {
+    "blind_f": 0.9575,
+    "depth_rmse": 7.2399,
+    "truth_f": 0.9581,
+    "chamfer_mm": 0.689,
+    "error": null,
+    "seconds": 0.15
+   },
+   "tsdf_5mm": {
+    "blind_f": 0.9249,
+    "depth_rmse": 8.511,
+    "truth_f": 0.7992,
+    "chamfer_mm": 1.239,
+    "error": null,
+    "seconds": 0.11
+   },
+   "poisson_d7": {
+    "blind_f": 0.9552,
+    "depth_rmse": 8.2896,
+    "truth_f": 0.7091,
+    "chamfer_mm": 1.623,
+    "error": null,
+    "seconds": 1.77
+   },
+   "poisson_d8": {
+    "blind_f": 0.9546,
+    "depth_rmse": 8.2578,
+    "truth_f": 0.7159,
+    "chamfer_mm": 1.638,
+    "error": null,
+    "seconds": 1.98
+   },
+   "poisson_d9": {
+    "blind_f": 0.9516,
+    "depth_rmse": 8.2577,
+    "truth_f": 0.726,
+    "chamfer_mm": 1.565,
+    "error": null,
+    "seconds": 3.25
+   },
+   "tsdf_poisson_2mm": {
+    "blind_f": 0.9558,
+    "depth_rmse": 7.4265,
+    "truth_f": 0.9141,
+    "chamfer_mm": 0.948,
+    "error": null,
+    "seconds": 4.02
+   },
+   "ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 1136 of 2833 faces; repair refused",
+    "seconds": 0.18
+   }
+  }
+ },
+ {
+  "sensor": "lidar",
+  "part": "thin_walled_box",
+  "seconds": 10.5,
+  "pick": "poisson_d7",
+  "pick_truth_f": 0.6164,
+  "pick_chamfer_mm": 1.953,
+  "oracle": "tsdf_3mm",
+  "oracle_truth_f": 0.6787,
+  "regret": 0.0623,
+  "candidates": {
+   "tsdf_2mm": {
+    "blind_f": 0.1337,
+    "depth_rmse": 17.9046,
+    "truth_f": 0.5324,
+    "chamfer_mm": 3.82,
+    "error": null,
+    "seconds": 0.31
+   },
+   "tsdf_3mm": {
+    "blind_f": 0.832,
+    "depth_rmse": 14.0009,
+    "truth_f": 0.6787,
+    "chamfer_mm": 2.056,
+    "error": null,
+    "seconds": 0.21
+   },
+   "tsdf_5mm": {
+    "blind_f": 0.8841,
+    "depth_rmse": 13.0852,
+    "truth_f": 0.6647,
+    "chamfer_mm": 2.013,
+    "error": null,
+    "seconds": 0.14
+   },
+   "poisson_d7": {
+    "blind_f": 0.8709,
+    "depth_rmse": 12.4073,
+    "truth_f": 0.6164,
+    "chamfer_mm": 1.953,
+    "error": null,
+    "seconds": 2.25
+   },
+   "poisson_d8": {
+    "blind_f": 0.8589,
+    "depth_rmse": 12.4328,
+    "truth_f": 0.622,
+    "chamfer_mm": 1.932,
+    "error": null,
+    "seconds": 2.88
+   },
+   "poisson_d9": {
+    "blind_f": 0.8672,
+    "depth_rmse": 12.4329,
+    "truth_f": 0.626,
+    "chamfer_mm": 1.901,
+    "error": null,
+    "seconds": 3.97
+   },
+   "tsdf_poisson_2mm": {
+    "blind_f": 0.1173,
+    "depth_rmse": 17.907,
+    "truth_f": 0.5468,
+    "chamfer_mm": 3.644,
+    "error": null,
+    "seconds": 6.08
+   },
+   "ball_pivoting": {
+    "blind_f": 0.0,
+    "depth_rmse": 17.9582,
+    "truth_f": 0.4324,
+    "chamfer_mm": 5.945,
+    "error": null,
+    "seconds": 0.39
+   }
+  }
+ },
+ {
+  "sensor": "lidar",
+  "part": "organic_handle",
+  "seconds": 16.8,
+  "pick": "tsdf_3mm",
+  "pick_truth_f": 0.6845,
+  "pick_chamfer_mm": 1.914,
+  "oracle": "tsdf_poisson_2mm",
+  "oracle_truth_f": 0.8624,
+  "regret": 0.1779,
+  "candidates": {
+   "tsdf_2mm": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 3810 of 9218 faces; repair refused",
+    "seconds": 0.49
+   },
+   "tsdf_3mm": {
+    "blind_f": 0.7308,
+    "depth_rmse": 9.7893,
+    "truth_f": 0.6845,
+    "chamfer_mm": 1.914,
+    "error": null,
+    "seconds": 0.18
+   },
+   "tsdf_5mm": {
+    "blind_f": 0.7275,
+    "depth_rmse": 10.3222,
+    "truth_f": 0.6233,
+    "chamfer_mm": 2.126,
+    "error": null,
+    "seconds": 0.12
+   },
+   "poisson_d7": {
+    "blind_f": 0.8296,
+    "depth_rmse": 12.5167,
+    "truth_f": 0.5252,
+    "chamfer_mm": 2.15,
+    "error": null,
+    "seconds": 2.12
+   },
+   "poisson_d8": {
+    "blind_f": 0.841,
+    "depth_rmse": 12.171,
+    "truth_f": 0.5516,
+    "chamfer_mm": 2.071,
+    "error": null,
+    "seconds": 2.76
+   },
+   "poisson_d9": {
+    "blind_f": 0.8426,
+    "depth_rmse": 12.1708,
+    "truth_f": 0.5456,
+    "chamfer_mm": 2.087,
+    "error": null,
+    "seconds": 3.7
+   },
+   "tsdf_poisson_2mm": {
+    "blind_f": 0.739,
+    "depth_rmse": 10.2179,
+    "truth_f": 0.8624,
+    "chamfer_mm": 1.385,
+    "error": null,
+    "seconds": 12.55
+   },
+   "ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 32 of 4448 faces; repair refused",
+    "seconds": 0.51
+   }
+  }
+ }
+]

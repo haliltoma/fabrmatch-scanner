@@ -63,6 +63,44 @@ class Engine:
         v = self.store.add_version(project.id, mesh, "import", {"source": src.name, "unit": unit}, metrics, None)
         return v, metrics
 
+    def reconstruct(self, path: str, project_name: str | None = None,
+                    algorithms: list[str] | None = None) -> dict:
+        """Runs every reconstruction algorithm on a raw capture folder and keeps all results.
+
+        The blind-best candidate becomes the first (reference) version and the head; the others are
+        stored as sibling versions so the user or agent can switch with version_revert.
+        """
+        from scanlab.recon.capture import Capture
+        from scanlab.recon.pipeline import pick_best, reconstruct_all
+
+        src = self.ws.resolve_input(path)
+        if not src.is_dir():
+            raise ValueError("expected a capture folder (capture.json + depth/*.sldf)")
+        capture = Capture.load(src)
+        scene, candidates = reconstruct_all(capture, only=algorithms)
+        best = pick_best(candidates)
+        project = self.store.create_project(project_name or src.name)
+        ordered = [best] + [c for c in candidates if c.ok and c is not best]
+        versions = {}
+        for c in ordered:
+            metrics = {**_analyze.analyze(c.mesh, thickness_samples=200), "blind_score": c.blind}
+            versions[c.name] = self.store.add_version(
+                project.id, c.mesh, f"reconstruct:{c.name}",
+                {"algorithm": c.name, "sensor": capture.sensor, "frames": len(capture.frames)}, metrics, None).id
+        self.store.revert(project.id, versions[best.name])
+        ranking = sorted(candidates, key=lambda c: -(c.blind.get("f") or -1))
+        return {
+            "project_id": project.id, "chosen": best.name, "chosen_version_id": versions[best.name],
+            "sensor": capture.sensor, "frames": len(capture.frames),
+            "train_frames": len(scene.train), "holdout_frames": len(scene.holdout),
+            "table_margin_mm": round(scene.config.margin_mm, 2),
+            "ranking": [{"algorithm": c.name, "version_id": versions.get(c.name), "seconds": c.seconds,
+                         "error": c.error, **c.blind} for c in ranking],
+            "note": "Blind score = agreement with held-out frames (recall) and no surface in observed free "
+                    "space (precision). It cannot see detail below sensor noise and slightly favours smooth "
+                    "surfaces; compare the top two visually when they are within 0.02.",
+        }
+
     # Read-only
     def analyze(self, project_id: str, version_id: str | None = None) -> dict:
         v = self.store.resolve(project_id, version_id)

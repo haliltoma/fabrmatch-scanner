@@ -43,7 +43,12 @@ def wall_thickness(mesh: trimesh.Trimesh, samples: int = 400, seed: int = 0,
     rng = np.random.default_rng(seed)
     points, face_idx = trimesh.sample.sample_surface(mesh, samples, seed=rng)
     smooth = mesh.vertex_normals[mesh.faces[face_idx]].mean(axis=1)
-    smooth /= np.linalg.norm(smooth, axis=1, keepdims=True)
+    length = np.linalg.norm(smooth, axis=1)
+    # Opposing vertex normals (slivers, folds) average to ~0 and would give NaN rays.
+    good = length > 1e-6
+    if not good.any():
+        return None
+    points, smooth = points[good], smooth[good] / length[good, None]
     origins = points - smooth * noise_floor_mm
     locations, ray_idx, tri_idx = mesh.ray.intersects_location(origins, -smooth, multiple_hits=False)
     # Only hits on the opposite skin (normals roughly anti-parallel); rays near an edge otherwise

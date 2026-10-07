@@ -45,3 +45,10 @@ uvx --from freecad-mcp==0.1.25 python scanlab-mac/freecad_bridge/smoke_test_f0b.
 | Varsayılan işlem | `0.20mm Standard @Creality K2 Pro 0.4 nozzle` |
 | Telafiler | delik 0,1 mm, fil ayağı 0,15 mm — **kalibre edilmedi** |
 | Profil | `scanlab-mac/scanlab/core/printers/creality_k2_pro.yaml` |
+
+## Yeniden yapılandırma bağımlılıkları
+| | |
+|---|---|
+| Open3D | 0.20.0 (arm64) — TSDF (tensor `VoxelBlockGrid`), raycasting, mesafe. Homebrew `libusb` gerektirir (`brew install libusb`) |
+| PyMeshLab | 2025.7.post1 — screened Poisson (Open3D'nin Poisson'u bu girdilerde süreci `abort()` ile düşürdü) |
+| shapely, mapbox-earcut | taban kapatma üçgenlemesi |

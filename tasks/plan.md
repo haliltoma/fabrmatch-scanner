@@ -28,6 +28,22 @@ canlı önizleme, diske kayıt, OBJ/PLY/STL dışa aktarma, proje kütüphanesi.
 ## Görev listesi
 Ayrıntılı kabul ölçütleri: `tasks/todo.md`.
 
+### Faz R — Çok algoritmalı yeniden yapılandırma + en iyi sonucu seçme (ÖNCELİK, 2026-10-07)
+Hedef (kullanıcı): "parçayı sorunsuzca çeşitli algoritmalarla tarasın, en iyi sonucu çıkarsın".
+Fikir: iPhone ham kareleri (derinlik + güven + poz) kaydeder → Mac'te N algoritma → zemin gerçeği olmadan
+puanlama (ayrılmış karelerle çapraz doğrulama, F-skoru) → en iyisi seçilir. Seçicinin doğruluğu sentetik
+taramalarda CAD aslıyla kanıtlanır.
+- [x] R1: Ham kare formatı `SLDF` (derinlik f32 m + güven u8 + iç parametre + poz) + `capture.json`; Python okuyucu (Swift kodlayıcı R7'de, ortak altın dosya)
+- [x] R2: Tarama simülatörü: CAD'den ışın izleme ile derinlik kareleri; LiDAR ve TrueDepth gürültü modelleri (mesafe bağımlı gürültü, kenar "uçan piksel", sıyırma açısında kayıp, poz kayması)
+- [x] R3: Aday algoritmalar: TSDF (1/2/4 mm), Screened Poisson (derinlik 8/9/10 + yoğunluk kırpma), Ball Pivoting, (+ ARKit mesh varsa)
+- [x] R4: Zemin gerçeği olmadan puan: ayrılmış karelerle doğruluk/tamlık, uydurma yüzey (halüsinasyon) oranı, F-skoru@τ, topoloji
+- [x] R5: Benchmark: 5 parça × 2 sensör; her algoritmanın CAD'e gerçek F-skoru, seçicinin pişmanlığı (en iyi − seçilen)
+- [x] R6: `reconstruct_best` MCP aracı: tüm adaylar sürüm olarak saklanır, head = en iyi, sıralama + görseller
+- [~] R7: iPhone: `SLDF` Swift kodlayıcı + anahtar kare politikası + `CaptureWriter` (paket, test edildi) + LiDAR modunda kayıt (uygulama kodu, Xcode yok → derlenmedi)
+### Kontrol noktası R — kısmen ✅ (`scanlab-mac/benchmarks/results_recon.md`)
+TrueDepth 5/5 doğru seçim, 4 parça CAD'e F@0,5 mm ≥ 0,988. LiDAR 2/4 (ayrılmış karede ~800 piksel: seçim gürültülü), 4 mm plaka LiDAR ile masadan ayrılamıyor.
+Sonraki: R8 TrueDepth yakalama modu (iPhone, en iyi sonuçlar bu sensörde) · R9 parçayı çevirip ikinci tarama + hizalama (görülmeyen alt yüz) · R10 LiDAR için k-katlı çapraz doğrulama · R11 gürültü modellerini gerçek cihazla kalibre etme (FR-22.5)
+
 ### Faz F0 — Temel
 - [x] T1: SPM paketi + test betiği + ADR'ler
 - [x] T2: Çekirdek modeller (Project/Scan, Capability, CaptureMode sözleşmesi)

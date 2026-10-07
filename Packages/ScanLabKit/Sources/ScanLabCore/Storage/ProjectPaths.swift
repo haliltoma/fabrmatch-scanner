@@ -27,5 +27,7 @@ public struct ScanPaths: Sendable, Equatable {
     public var depth: URL { raw.appendingPathComponent("depth", isDirectory: true) }
     public var confidence: URL { raw.appendingPathComponent("conf", isDirectory: true) }
     public var worldMap: URL { raw.appendingPathComponent("worldmap.arworldmap") }
+    /// Raw depth capture for multi-algorithm reconstruction: `capture.json` + `depth/*.sldf`.
+    public var capture: URL { raw.appendingPathComponent("capture", isDirectory: true) }
     public var manifest: URL { root.appendingPathComponent("scan.json") }
 }

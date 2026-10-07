@@ -13,6 +13,16 @@ public enum QualityProfile: String, Codable, Sendable, CaseIterable {
         }
     }
 
+    /// Minimum camera rotation between keyframes, degrees. Orbiting a small part, rotation — not
+    /// translation — is what adds new viewpoints.
+    public var keyframeAngle: Float {
+        switch self {
+        case .fast: 15
+        case .balanced: 10
+        case .high: 6
+        }
+    }
+
     /// Whether per-keyframe depth and confidence maps are written to disk.
     public var recordsDepth: Bool { self != .fast }
 }
