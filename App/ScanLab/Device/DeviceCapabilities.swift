@@ -3,6 +3,7 @@ import AVFoundation
 import RealityKit
 import RoomPlan
 import ScanLabCore
+import SwiftUI  // ObjectCaptureSession lives in the RealityKit+SwiftUI cross-import overlay
 
 /// FR-1.1 capability probe. On the simulator or devices without LiDAR every check fails
 /// and the app runs in restricted mode instead of crashing.
