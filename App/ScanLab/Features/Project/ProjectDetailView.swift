@@ -44,7 +44,11 @@ struct ProjectDetailView: View {
                                                               exports: model.exportsDirectory)
                                 })
                             }
-                            if model.hasRawCapture(scan) {
+                            if model.photos(of: scan) != nil {
+                                Button("Fotoğrafları paylaş (ZIP, Mac'te tam detay model)", systemImage: "photo.stack") {
+                                    Task { sharing = await model.zipRawCapture(scan).map(SharedFile.init) }
+                                }
+                            } else if model.hasRawCapture(scan) {
                                 Button("Ham kareleri paylaş (ZIP, Mac'te işlemek için)", systemImage: "shippingbox") {
                                     Task { sharing = await model.zipRawCapture(scan).map(SharedFile.init) }
                                 }

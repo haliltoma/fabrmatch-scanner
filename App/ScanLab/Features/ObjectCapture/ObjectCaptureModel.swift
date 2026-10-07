@@ -13,6 +13,15 @@ final class ObjectCaptureModel {
     let request: ScanRequest
     private(set) var phase: Phase = .preparing
     private(set) var session: ObjectCaptureSession?
+    /// Live capture guidance from the session (too close, too fast, too dark…).
+    private(set) var feedback: Set<ObjectCaptureSession.Feedback> = []
+    private(set) var shots = 0
+    /// Orbits finished so far. Apple's guidance — and what the reconstruction needs to see every side —
+    /// is three orbits at different heights, plus a flipped one for the underside.
+    private(set) var completedPasses = 0
+    static let recommendedPasses = 3
+    /// Below this the solver lacks overlap and the shape comes out lumpy (the 25-photo bottle did).
+    static let minimumShots = 60
     private let store: ProjectStore
     private var slot: ScanSlot?
     private var startedAt = Date.now
@@ -39,6 +48,8 @@ final class ObjectCaptureModel {
             }
             var config = ObjectCaptureSession.Configuration()
             config.checkpointDirectory = checkpoint
+            // Extra frames for the Mac's full-detail rebuild of the same capture.
+            config.isOverCaptureEnabled = true
             let session = ObjectCaptureSession()
             session.start(imagesDirectory: images, configuration: config)
             self.slot = slot
@@ -64,8 +75,16 @@ final class ObjectCaptureModel {
         }
         Task { [weak self] in
             for await done in session.userCompletedScanPassUpdates where done {
-                self?.phase = .passComplete
+                guard let self else { return }
+                self.completedPasses += 1
+                self.phase = .passComplete
             }
+        }
+        Task { [weak self] in
+            for await feedback in session.feedbackUpdates { self?.feedback = feedback }
+        }
+        Task { [weak self] in
+            for await shots in session.numberOfShotsTakenUpdates { self?.shots = shots }
         }
     }
 
@@ -87,6 +106,17 @@ final class ObjectCaptureModel {
 
     func finishCapture() { session?.finish() }
 
+    /// Why finishing now would give a poor model, or nil when the capture is complete enough.
+    var finishWarning: String? {
+        if shots < Self.minimumShots {
+            return "\(shots) fotoğraf çekildi; düzgün bir model için en az \(Self.minimumShots) gerekir. Az fotoğrafla yüzeyler buruşuk ve eğik çıkar."
+        }
+        if completedPasses < Self.recommendedPasses {
+            return "\(completedPasses)/\(Self.recommendedPasses) tur tamamlandı. Üst ve alt kenarlar eksik kalabilir."
+        }
+        return nil
+    }
+
     private func reconstruct() async {
         guard let slot, let images else { return }
         let output = slot.paths.root.appendingPathComponent("model.usdz")
@@ -96,7 +126,13 @@ final class ObjectCaptureModel {
                 throw CocoaError(.featureUnsupported, userInfo: [NSLocalizedDescriptionKey:
                     "Cihazda fotogrametri desteklenmiyor; fotoğraflar kaydedildi, Mac'te işlenebilir."])
             }
-            let photogrammetry = try PhotogrammetrySession(input: images)
+            // High sensitivity finds features on smooth, low-texture parts; the photos are taken in
+            // orbit order, so sequential matching is both faster and more robust.
+            var config = PhotogrammetrySession.Configuration()
+            config.featureSensitivity = .high
+            config.sampleOrdering = .sequential
+            config.isObjectMaskingEnabled = true
+            let photogrammetry = try PhotogrammetrySession(input: images, configuration: config)
             try photogrammetry.process(requests: [.modelFile(url: output, detail: .reduced)])
             for try await out in photogrammetry.outputs {
                 switch out {

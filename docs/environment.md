@@ -52,3 +52,10 @@ uvx --from freecad-mcp==0.1.25 python scanlab-mac/freecad_bridge/smoke_test_f0b.
 | Open3D | 0.20.0 (arm64) — TSDF (tensor `VoxelBlockGrid`), raycasting, mesafe. Homebrew `libusb` gerektirir (`brew install libusb`) |
 | PyMeshLab | 2025.7.post1 — screened Poisson (Open3D'nin Poisson'u bu girdilerde süreci `abort()` ile düşürdü) |
 | shapely, mapbox-earcut | taban kapatma üçgenlemesi |
+
+## Object Capture fotoğraflarını Mac'te tam detayda işleme
+Telefon yalnızca `.reduced` detay üretir. Proje ekranındaki "Fotoğrafları paylaş (ZIP)" ile fotoğrafları Mac'e at, aç ve:
+
+    swift scanlab-mac/tools/photogrammetry.swift <images-klasörü> model.usdz full     # preview|reduced|medium|full|raw
+
+Varsayılan: yüksek özellik hassasiyeti, sıralı eşleme, nesne maskeleme. 25 fotoğraflık şişe taramasında ~50 sn sürdü.

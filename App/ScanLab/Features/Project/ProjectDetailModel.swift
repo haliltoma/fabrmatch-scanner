@@ -95,10 +95,17 @@ final class ProjectDetailModel {
         FileManager.default.fileExists(atPath: scanPaths(scan).capture.appendingPathComponent("capture.json").path)
     }
 
-    /// Zips `raw/capture` (and Object Capture photos) for AirDrop to the Mac pipeline. Uses the system's
+    /// Object Capture photos; the phone only builds `.reduced` models, the Mac rebuilds them at full detail.
+    func photos(of scan: ScanRecord) -> URL? {
+        let images = scanPaths(scan).root.appendingPathComponent("images", isDirectory: true)
+        let count = (try? FileManager.default.contentsOfDirectory(atPath: images.path).count) ?? 0
+        return count > 0 ? images : nil
+    }
+
+    /// Zips `raw/capture` (or Object Capture photos) for AirDrop to the Mac pipeline. Uses the system's
     /// coordinated "for uploading" read, which produces a zip of a directory without extra libraries.
     func zipRawCapture(_ scan: ScanRecord) async -> URL? {
-        let source = scanPaths(scan).capture
+        let source = photos(of: scan) ?? scanPaths(scan).capture
         let name = "scan-\(scan.id.uuidString.prefix(8))-\(scan.mode.rawValue).zip"
         let result: Result<URL, Error> = await Self.zip(source, name)
         switch result {
