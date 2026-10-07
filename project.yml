@@ -14,7 +14,7 @@ settings:
     SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
     SWIFT_APPROACHABLE_CONCURRENCY: YES
     # Fill in your Apple ID team (Xcode → Settings → Accounts) for on-device signing.
-    DEVELOPMENT_TEAM: ""
+    DEVELOPMENT_TEAM: TADCZKSU89  # Personal Team (free provisioning: reinstall every 7 days)
     CODE_SIGN_STYLE: Automatic
 targets:
   ScanLab:
