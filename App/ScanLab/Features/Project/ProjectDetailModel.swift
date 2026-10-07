@@ -38,4 +38,16 @@ final class ProjectDetailModel {
     }
 
     var exportsDirectory: URL { store.paths(for: projectID).exports }
+
+    /// Deliverables a capture mode wrote next to its scan (models, point clouds, plans, packages).
+    func outputs(of scan: ScanRecord) -> [URL] {
+        let root = scanPaths(scan).root
+        let names = ["model.usdz", "room.usdz", "room.json", "pointcloud.ply", "splat/transforms.json"]
+        return names.map { root.appendingPathComponent($0) }.filter { FileManager.default.fileExists(atPath: $0.path) }
+    }
+
+    func hasMesh(_ scan: ScanRecord) -> Bool {
+        let chunks = scanPaths(scan).meshChunks
+        return ((try? FileManager.default.contentsOfDirectory(atPath: chunks.path))?.isEmpty == false)
+    }
 }

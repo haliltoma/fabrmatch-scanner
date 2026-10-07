@@ -46,7 +46,7 @@ struct LibraryView: View {
                 }
             }
             .fullScreenCover(item: $activeScan) { request in
-                ScanView(request: request) { finishedProjectID in
+                ScanContainer(request: request) { finishedProjectID in
                     activeScan = nil
                     Task {
                         await model?.reload()

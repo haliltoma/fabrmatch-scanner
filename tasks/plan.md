@@ -42,7 +42,10 @@ taramalarda CAD aslıyla kanıtlanır.
 - [~] R7: iPhone: `SLDF` Swift kodlayıcı + anahtar kare politikası + `CaptureWriter` (paket, test edildi) + LiDAR modunda kayıt (uygulama kodu, Xcode yok → derlenmedi)
 ### Kontrol noktası R — kısmen ✅ (`scanlab-mac/benchmarks/results_recon.md`)
 TrueDepth 5/5 doğru seçim, 4 parça CAD'e F@0,5 mm ≥ 0,988. LiDAR 2/4 (ayrılmış karede ~800 piksel: seçim gürültülü), 4 mm plaka LiDAR ile masadan ayrılamıyor.
-Sonraki: R8 TrueDepth yakalama modu (iPhone, en iyi sonuçlar bu sensörde) · R9 parçayı çevirip ikinci tarama + hizalama (görülmeyen alt yüz) · R10 LiDAR için k-katlı çapraz doğrulama · R11 gürültü modellerini gerçek cihazla kalibre etme (FR-22.5)
+R8 TrueDepth yakalama modu ✅ yazıldı + cihaza yüklendi (2026-10-07; gerçek veriyle doğrulama bekliyor) · Sonraki: · R9 parçayı çevirip ikinci tarama + hizalama (görülmeyen alt yüz) · R10 LiDAR için k-katlı çapraz doğrulama · R11 gürültü modellerini gerçek cihazla kalibre etme (FR-22.5)
+
+### Uygulama modları (2026-10-07, cihaza yüklendi, saha testi bekliyor)
+- [x] TrueDepth (ham SLDF + anlık nokta bulutu) · RoomPlan (USDZ+JSON) · Object Capture (rehberli çekim + cihazda fotogrametri, çevirme turu) · Nokta bulutu (LiDAR karelerinden PLY) · Foto/Video (Nerfstudio transforms.json)
 
 ### Faz R9 — Çevir ve hizala (görülmeyen alt yüz, PRD FR-27.5 / M9.11)
 - [x] F1: Kare başına parça maskesi (masa/dağınıklık pikselleri ayrı tutulur) — tek ve çok geçişli sahneler aynı kodu kullanır

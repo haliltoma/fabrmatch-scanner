@@ -13,10 +13,16 @@ struct ProjectDetailView: View {
                 List {
                     Section("Taramalar") {
                         ForEach(project.scans) { scan in
-                            ScanRow(scan: scan) {
+                            ScanRow(scan: scan, canExport: model.hasMesh(scan)) {
                                 exporting = ExportRequest(projectName: project.name, scan: scan,
                                                           chunks: model.scanPaths(scan).meshChunks,
                                                           exports: model.exportsDirectory)
+                            }
+                            ForEach(model.outputs(of: scan), id: \.self) { file in
+                                ShareLink(item: file) {
+                                    Label(file.lastPathComponent, systemImage: "doc")
+                                        .font(.subheadline)
+                                }
                             }
                         }
                     }

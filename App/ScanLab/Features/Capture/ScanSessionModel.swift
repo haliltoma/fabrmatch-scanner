@@ -71,7 +71,15 @@ final class ScanSessionModel {
         stopLoops()
         defer { UIApplication.shared.isIdleTimerDisabled = false }
         do {
-            let artifact = try await mode.finish()
+            var artifact = try await mode.finish()
+            if request.mode == .pointCloud {
+                let capture = artifact.scanDirectory.appendingPathComponent("raw/capture")
+                let output = artifact.scanDirectory.appendingPathComponent("pointcloud.ply")
+                let count = try await Task.detached(priority: .userInitiated) {
+                    try CapturePointCloud.write(captureDirectory: capture, to: output, voxelSize: 0.004)
+                }.value
+                artifact.record.stats.vertices = count
+            }
             try await store.updateScan(artifact.record, in: request.projectID)
             phase = .finished
             return request.projectID
