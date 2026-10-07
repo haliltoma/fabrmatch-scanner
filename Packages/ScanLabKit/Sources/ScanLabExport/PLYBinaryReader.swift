@@ -16,9 +16,10 @@ public struct PLYBinaryReader: MeshReader {
         func count(of element: String) -> Int? {
             lines.first { $0.hasPrefix("element \(element) ") }.flatMap { Int($0.split(separator: " ")[2]) }
         }
-        guard let vertexCount = count(of: "vertex"), let faceCount = count(of: "face") else {
-            throw MeshFormatError.invalidHeader("missing element counts")
+        guard let vertexCount = count(of: "vertex") else {
+            throw MeshFormatError.invalidHeader("missing vertex element")
         }
+        let faceCount = count(of: "face") ?? 0  // point clouds usually have no face element at all
         let hasColor = lines.contains("property uchar red")
 
         var r = ByteReader(data, offset: end.upperBound - data.startIndex)

@@ -50,7 +50,6 @@ final class ScanSessionModel {
             try await mode.start()
             segmentStart = .now
             phase = .scanning
-            UIApplication.shared.isIdleTimerDisabled = true
         } catch {
             phase = .failed(error.localizedDescription)
         }
@@ -69,7 +68,6 @@ final class ScanSessionModel {
         closeSegment()
         phase = .saving
         stopLoops()
-        defer { UIApplication.shared.isIdleTimerDisabled = false }
         do {
             var artifact = try await mode.finish()
             if request.mode == .pointCloud {
@@ -91,7 +89,6 @@ final class ScanSessionModel {
 
     func discard() async {
         stopLoops()
-        UIApplication.shared.isIdleTimerDisabled = false
         await mode?.cancel()
         try? await store.moveToTrash(request.projectID)
     }

@@ -7,6 +7,14 @@ struct ScanContainer: View {
     let onClose: (UUID?) -> Void
 
     var body: some View {
+        modeView
+            // Keep the screen awake for the whole capture, including processing and saving.
+            .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
+            .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
+    }
+
+    @ViewBuilder
+    private var modeView: some View {
         switch request.mode {
         case .lidarMesh, .pointCloud:
             ScanView(request: request, onClose: onClose)

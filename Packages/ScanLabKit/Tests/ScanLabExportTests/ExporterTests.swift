@@ -80,4 +80,16 @@ import Testing
         #expect(abs(back.x - p.x) < 1e-5 && abs(back.y - p.y) < 1e-5 && abs(back.z - p.z) < 1e-5)
         #expect(o.transform(SIMD3(0, 1, 0)) == SIMD3(0, 0, 1000))
     }
+
+    @Test("A point-cloud PLY without any face element reads as points")
+    func plyWithoutFaceElement() throws {
+        let tmp = try TemporaryDirectory()
+        let url = tmp.url.appendingPathComponent("cloud.ply")
+        var w = ByteWriter()
+        w.write(bytes: Array("ply\nformat binary_little_endian 1.0\nelement vertex 2\nproperty float x\nproperty float y\nproperty float z\nend_header\n".utf8))
+        w.write(SIMD3<Float>(1, 2, 3)); w.write(SIMD3<Float>(4, 5, 6))
+        try w.data.write(to: url)
+        let m = try PLYBinaryReader().read(from: url, options: ExportOptions())
+        #expect(m.vertexCount == 2 && m.triangleCount == 0 && m.positions[1] == SIMD3(4, 5, 6))
+    }
 }
