@@ -43,6 +43,9 @@ class DepthFrame:
     cy: float
     pose: np.ndarray         # (4, 4) camera→world, ARKit convention
     timestamp: float = 0.0
+    # Pixels that belong to the part (set during scene preparation, not stored in SLDF). Everything
+    # else (table, clutter) is background: still valid evidence of free space.
+    part: np.ndarray | None = None
 
     @property
     def size(self) -> tuple[int, int]:
@@ -56,9 +59,12 @@ class DepthFrame:
         """World→camera in OpenCV convention (what Open3D's TSDF integration expects)."""
         return ARKIT_TO_CV @ np.linalg.inv(self.pose)
 
-    def points(self, min_confidence: int = 1, max_depth: float | None = None) -> tuple[np.ndarray, np.ndarray]:
+    def points(self, min_confidence: int = 1, max_depth: float | None = None,
+               part_only: bool = False) -> tuple[np.ndarray, np.ndarray]:
         """World-space points (n, 3) in meters and their pixel mask (h, w)."""
         mask = (self.depth > 0) & (self.confidence >= min_confidence)
+        if part_only and self.part is not None:
+            mask &= self.part
         if max_depth is not None:
             mask &= self.depth <= max_depth
         v, u = np.nonzero(mask)

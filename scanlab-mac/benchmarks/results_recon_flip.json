@@ -1,0 +1,683 @@
+[
+ {
+  "sensor": "truedepth",
+  "part": "flat_plate",
+  "seconds": 97.8,
+  "pick": "1pass:tsdf_0.5mm",
+  "pick_truth_f": 0.9879,
+  "pick_chamfer_mm": 0.069,
+  "oracle": "1pass:tsdf_poisson_0.5mm",
+  "oracle_truth_f": 0.9999,
+  "regret": 0.012,
+  "alignment": {
+   "used": "1pass",
+   "note": "second pass not used: the second pass fits much better without turning the part (overlap 0.43 vs 0.01): either it was not turned over, or it looks the same both ways up and cannot be aligned reliably"
+  },
+  "candidates": {
+   "1pass:tsdf_0.5mm": {
+    "blind_f": 0.9067,
+    "depth_rmse": 0.8028,
+    "truth_f": 0.9879,
+    "chamfer_mm": 0.069,
+    "error": null,
+    "seconds": 1.13
+   },
+   "1pass:tsdf_1mm": {
+    "blind_f": 0.8934,
+    "depth_rmse": 0.8192,
+    "truth_f": 0.9338,
+    "chamfer_mm": 0.11,
+    "error": null,
+    "seconds": 1.17
+   },
+   "1pass:tsdf_2mm": {
+    "blind_f": 0.8843,
+    "depth_rmse": 0.8953,
+    "truth_f": 0.9065,
+    "chamfer_mm": 0.148,
+    "error": null,
+    "seconds": 0.74
+   },
+   "1pass:poisson_d8": {
+    "blind_f": 0.9519,
+    "depth_rmse": 0.8038,
+    "truth_f": 0.9574,
+    "chamfer_mm": 0.142,
+    "error": null,
+    "seconds": 6.53
+   },
+   "1pass:poisson_d9": {
+    "blind_f": 0.9784,
+    "depth_rmse": 0.8406,
+    "truth_f": 0.923,
+    "chamfer_mm": 0.161,
+    "error": null,
+    "seconds": 23.2
+   },
+   "1pass:poisson_d10": {
+    "blind_f": 0.9676,
+    "depth_rmse": 0.8305,
+    "truth_f": 0.9426,
+    "chamfer_mm": 0.15,
+    "error": null,
+    "seconds": 11.98
+   },
+   "1pass:tsdf_poisson_0.5mm": {
+    "blind_f": 0.8997,
+    "depth_rmse": 0.8039,
+    "truth_f": 0.9999,
+    "chamfer_mm": 0.063,
+    "error": null,
+    "seconds": 7.25
+   },
+   "1pass:ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 43120 of 105550 faces; repair refused",
+    "seconds": 18.08
+   }
+  }
+ },
+ {
+  "sensor": "truedepth",
+  "part": "holed_bracket",
+  "seconds": 184.7,
+  "pick": "1pass:tsdf_poisson_0.5mm",
+  "pick_truth_f": 0.9874,
+  "pick_chamfer_mm": 0.12,
+  "oracle": "1pass:tsdf_poisson_0.5mm",
+  "oracle_truth_f": 0.9874,
+  "regret": 0.0,
+  "alignment": {
+   "used": "1pass",
+   "first_pass_check": {
+    "invented": 0.0023,
+    "missing": 0.0001
+   },
+   "note": "the turned pass confirms the base sits flat on the table; first pass used (cleaner)",
+   "chamfer_mm": 0.23
+  },
+  "candidates": {
+   "1pass:tsdf_0.5mm": {
+    "blind_f": 0.926,
+    "depth_rmse": 0.8567,
+    "truth_f": 0.7311,
+    "chamfer_mm": 0.563,
+    "error": null,
+    "seconds": 8.84
+   },
+   "1pass:tsdf_1mm": {
+    "blind_f": 0.9079,
+    "depth_rmse": 0.8726,
+    "truth_f": 0.7099,
+    "chamfer_mm": 0.552,
+    "error": null,
+    "seconds": 2.33
+   },
+   "1pass:tsdf_2mm": {
+    "blind_f": 0.765,
+    "depth_rmse": 1.166,
+    "truth_f": 0.3881,
+    "chamfer_mm": 0.974,
+    "error": null,
+    "seconds": 0.41
+   },
+   "1pass:poisson_d8": {
+    "blind_f": 0.9453,
+    "depth_rmse": 0.9904,
+    "truth_f": 0.9099,
+    "chamfer_mm": 0.202,
+    "error": null,
+    "seconds": 12.36
+   },
+   "1pass:poisson_d9": {
+    "blind_f": 0.9467,
+    "depth_rmse": 1.0006,
+    "truth_f": 0.9108,
+    "chamfer_mm": 0.205,
+    "error": null,
+    "seconds": 14.77
+   },
+   "1pass:poisson_d10": {
+    "blind_f": 0.9414,
+    "depth_rmse": 0.9785,
+    "truth_f": 0.9177,
+    "chamfer_mm": 0.198,
+    "error": null,
+    "seconds": 16.77
+   },
+   "1pass:tsdf_poisson_0.5mm": {
+    "blind_f": 0.9171,
+    "depth_rmse": 0.8014,
+    "truth_f": 0.9874,
+    "chamfer_mm": 0.12,
+    "error": null,
+    "seconds": 11.3
+   },
+   "1pass:ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 15796 of 104294 faces; repair refused",
+    "seconds": 32.21
+   },
+   "2pass:tsdf_0.5mm": {
+    "blind_f": 0.9111,
+    "depth_rmse": 0.8828,
+    "truth_f": 0.9156,
+    "chamfer_mm": 0.212,
+    "error": null,
+    "seconds": 0.69
+   },
+   "2pass:tsdf_1mm": {
+    "blind_f": 0.8626,
+    "depth_rmse": 1.1191,
+    "truth_f": 0.9015,
+    "chamfer_mm": 0.234,
+    "error": null,
+    "seconds": 0.23
+   },
+   "2pass:tsdf_2mm": {
+    "blind_f": 0.4989,
+    "depth_rmse": 1.4872,
+    "truth_f": 0.3377,
+    "chamfer_mm": 0.921,
+    "error": null,
+    "seconds": 0.75
+   },
+   "2pass:poisson_d8": {
+    "blind_f": 0.9423,
+    "depth_rmse": 1.0232,
+    "truth_f": 0.8846,
+    "chamfer_mm": 0.237,
+    "error": null,
+    "seconds": 8.11
+   },
+   "2pass:poisson_d9": {
+    "blind_f": 0.9465,
+    "depth_rmse": 1.0261,
+    "truth_f": 0.8729,
+    "chamfer_mm": 0.242,
+    "error": null,
+    "seconds": 12.54
+   },
+   "2pass:poisson_d10": {
+    "blind_f": 0.9411,
+    "depth_rmse": 1.0676,
+    "truth_f": 0.8881,
+    "chamfer_mm": 0.236,
+    "error": null,
+    "seconds": 13.79
+   },
+   "2pass:tsdf_poisson_0.5mm": {
+    "blind_f": 0.9003,
+    "depth_rmse": 0.8514,
+    "truth_f": 0.9115,
+    "chamfer_mm": 0.214,
+    "error": null,
+    "seconds": 8.99
+   },
+   "2pass:ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 4932 of 119392 faces; repair refused",
+    "seconds": 20.58
+   }
+  }
+ },
+ {
+  "sensor": "truedepth",
+  "part": "stepped_shaft",
+  "seconds": 109.7,
+  "pick": "1pass:tsdf_poisson_0.5mm",
+  "pick_truth_f": 0.9979,
+  "pick_chamfer_mm": 0.146,
+  "oracle": "2pass:tsdf_poisson_0.5mm",
+  "oracle_truth_f": 0.999,
+  "regret": 0.0011,
+  "alignment": {
+   "used": "1pass",
+   "first_pass_check": {
+    "invented": 0.0,
+    "missing": 0.0001
+   },
+   "note": "the turned pass confirms the base sits flat on the table; first pass used (cleaner)",
+   "chamfer_mm": 0.191
+  },
+  "candidates": {
+   "1pass:tsdf_0.5mm": {
+    "blind_f": 0.9194,
+    "depth_rmse": 0.8535,
+    "truth_f": 0.9944,
+    "chamfer_mm": 0.149,
+    "error": null,
+    "seconds": 2.07
+   },
+   "1pass:tsdf_1mm": {
+    "blind_f": 0.9021,
+    "depth_rmse": 0.8625,
+    "truth_f": 0.9719,
+    "chamfer_mm": 0.157,
+    "error": null,
+    "seconds": 0.69
+   },
+   "1pass:tsdf_2mm": {
+    "blind_f": 0.8216,
+    "depth_rmse": 1.0267,
+    "truth_f": 0.8194,
+    "chamfer_mm": 0.297,
+    "error": null,
+    "seconds": 0.45
+   },
+   "1pass:poisson_d8": {
+    "blind_f": 0.9246,
+    "depth_rmse": 0.879,
+    "truth_f": 0.9571,
+    "chamfer_mm": 0.204,
+    "error": null,
+    "seconds": 7.01
+   },
+   "1pass:poisson_d9": {
+    "blind_f": 0.9262,
+    "depth_rmse": 0.8809,
+    "truth_f": 0.9576,
+    "chamfer_mm": 0.204,
+    "error": null,
+    "seconds": 9.16
+   },
+   "1pass:poisson_d10": {
+    "blind_f": 0.9261,
+    "depth_rmse": 0.876,
+    "truth_f": 0.9622,
+    "chamfer_mm": 0.201,
+    "error": null,
+    "seconds": 10.14
+   },
+   "1pass:tsdf_poisson_0.5mm": {
+    "blind_f": 0.9076,
+    "depth_rmse": 0.8428,
+    "truth_f": 0.9979,
+    "chamfer_mm": 0.146,
+    "error": null,
+    "seconds": 6.71
+   },
+   "1pass:ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "IndexError: list index out of range",
+    "seconds": 1.55
+   },
+   "2pass:tsdf_0.5mm": {
+    "blind_f": 0.9096,
+    "depth_rmse": 0.9337,
+    "truth_f": 0.9985,
+    "chamfer_mm": 0.162,
+    "error": null,
+    "seconds": 0.26
+   },
+   "2pass:tsdf_1mm": {
+    "blind_f": 0.8804,
+    "depth_rmse": 0.9661,
+    "truth_f": 0.9775,
+    "chamfer_mm": 0.165,
+    "error": null,
+    "seconds": 0.11
+   },
+   "2pass:tsdf_2mm": {
+    "blind_f": 0.7395,
+    "depth_rmse": 1.1237,
+    "truth_f": 0.7358,
+    "chamfer_mm": 0.363,
+    "error": null,
+    "seconds": 0.09
+   },
+   "2pass:poisson_d8": {
+    "blind_f": 0.9189,
+    "depth_rmse": 0.9003,
+    "truth_f": 0.9499,
+    "chamfer_mm": 0.203,
+    "error": null,
+    "seconds": 3.43
+   },
+   "2pass:poisson_d9": {
+    "blind_f": 0.9227,
+    "depth_rmse": 0.9008,
+    "truth_f": 0.9422,
+    "chamfer_mm": 0.206,
+    "error": null,
+    "seconds": 6.28
+   },
+   "2pass:poisson_d10": {
+    "blind_f": 0.9221,
+    "depth_rmse": 0.895,
+    "truth_f": 0.9485,
+    "chamfer_mm": 0.203,
+    "error": null,
+    "seconds": 7.35
+   },
+   "2pass:tsdf_poisson_0.5mm": {
+    "blind_f": 0.9016,
+    "depth_rmse": 0.9598,
+    "truth_f": 0.999,
+    "chamfer_mm": 0.163,
+    "error": null,
+    "seconds": 5.49
+   },
+   "2pass:ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 3546 of 54152 faces; repair refused",
+    "seconds": 4.37
+   }
+  }
+ },
+ {
+  "sensor": "truedepth",
+  "part": "thin_walled_box",
+  "seconds": 264.6,
+  "pick": "1pass:tsdf_poisson_0.5mm",
+  "pick_truth_f": 0.989,
+  "pick_chamfer_mm": 0.147,
+  "oracle": "1pass:tsdf_poisson_0.5mm",
+  "oracle_truth_f": 0.989,
+  "regret": 0.0,
+  "alignment": {
+   "used": "1pass",
+   "first_pass_check": {
+    "invented": 0.0,
+    "missing": 0.0001
+   },
+   "note": "the turned pass confirms the base sits flat on the table; first pass used (cleaner)",
+   "chamfer_mm": 0.175
+  },
+  "candidates": {
+   "1pass:tsdf_0.5mm": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: Not all meshes are volumes!",
+    "seconds": 16.99
+   },
+   "1pass:tsdf_1mm": {
+    "blind_f": 0.8359,
+    "depth_rmse": 1.1895,
+    "truth_f": 0.6078,
+    "chamfer_mm": 0.456,
+    "error": null,
+    "seconds": 1.59
+   },
+   "1pass:tsdf_2mm": {
+    "blind_f": 0.4977,
+    "depth_rmse": 1.7489,
+    "truth_f": 0.2683,
+    "chamfer_mm": 0.965,
+    "error": null,
+    "seconds": 0.59
+   },
+   "1pass:poisson_d8": {
+    "blind_f": 0.9171,
+    "depth_rmse": 1.0608,
+    "truth_f": 0.8648,
+    "chamfer_mm": 0.299,
+    "error": null,
+    "seconds": 18.92
+   },
+   "1pass:poisson_d9": {
+    "blind_f": 0.9195,
+    "depth_rmse": 1.0479,
+    "truth_f": 0.8628,
+    "chamfer_mm": 0.297,
+    "error": null,
+    "seconds": 21.81
+   },
+   "1pass:poisson_d10": {
+    "blind_f": 0.9186,
+    "depth_rmse": 1.0468,
+    "truth_f": 0.8633,
+    "chamfer_mm": 0.294,
+    "error": null,
+    "seconds": 23.93
+   },
+   "1pass:tsdf_poisson_0.5mm": {
+    "blind_f": 0.9684,
+    "depth_rmse": 0.9032,
+    "truth_f": 0.989,
+    "chamfer_mm": 0.147,
+    "error": null,
+    "seconds": 18.86
+   },
+   "1pass:ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 21834 of 78407 faces; repair refused",
+    "seconds": 16.64
+   },
+   "2pass:tsdf_0.5mm": {
+    "blind_f": 0.8769,
+    "depth_rmse": 1.0796,
+    "truth_f": 0.7926,
+    "chamfer_mm": 0.466,
+    "error": null,
+    "seconds": 53.12
+   },
+   "2pass:tsdf_1mm": {
+    "blind_f": 0.6896,
+    "depth_rmse": 1.324,
+    "truth_f": 0.4393,
+    "chamfer_mm": 0.966,
+    "error": null,
+    "seconds": 0.3
+   },
+   "2pass:tsdf_2mm": {
+    "blind_f": 0.4527,
+    "depth_rmse": 1.6066,
+    "truth_f": 0.245,
+    "chamfer_mm": 1.489,
+    "error": null,
+    "seconds": 0.13
+   },
+   "2pass:poisson_d8": {
+    "blind_f": 0.8735,
+    "depth_rmse": 1.3456,
+    "truth_f": 0.7449,
+    "chamfer_mm": 0.782,
+    "error": null,
+    "seconds": 18.96
+   },
+   "2pass:poisson_d9": {
+    "blind_f": 0.8577,
+    "depth_rmse": 1.3234,
+    "truth_f": 0.7212,
+    "chamfer_mm": 0.838,
+    "error": null,
+    "seconds": 19.51
+   },
+   "2pass:poisson_d10": {
+    "blind_f": 0.8559,
+    "depth_rmse": 1.3288,
+    "truth_f": 0.7203,
+    "chamfer_mm": 0.862,
+    "error": null,
+    "seconds": 21.15
+   },
+   "2pass:tsdf_poisson_0.5mm": {
+    "blind_f": 0.8672,
+    "depth_rmse": 1.1545,
+    "truth_f": 0.7813,
+    "chamfer_mm": 0.588,
+    "error": null,
+    "seconds": 9.51
+   },
+   "2pass:ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 7064 of 99280 faces; repair refused",
+    "seconds": 40.24
+   }
+  }
+ },
+ {
+  "sensor": "truedepth",
+  "part": "organic_handle",
+  "seconds": 176.1,
+  "pick": "2pass:poisson_d10",
+  "pick_truth_f": 0.9445,
+  "pick_chamfer_mm": 0.202,
+  "oracle": "2pass:poisson_d8",
+  "oracle_truth_f": 0.961,
+  "regret": 0.0165,
+  "alignment": {
+   "used": "2pass",
+   "first_pass_check": {
+    "invented": 0.2205,
+    "missing": 0.004
+   },
+   "note": "the turned pass shows the base is not flat on the table; merged result used",
+   "chamfer_mm": 0.193
+  },
+  "candidates": {
+   "2pass:tsdf_0.5mm": {
+    "blind_f": 0.8417,
+    "depth_rmse": 1.1419,
+    "truth_f": 0.9464,
+    "chamfer_mm": 0.155,
+    "error": null,
+    "seconds": 0.25
+   },
+   "2pass:tsdf_1mm": {
+    "blind_f": 0.7923,
+    "depth_rmse": 1.2085,
+    "truth_f": 0.9549,
+    "chamfer_mm": 0.163,
+    "error": null,
+    "seconds": 0.12
+   },
+   "2pass:tsdf_2mm": {
+    "blind_f": 0.5959,
+    "depth_rmse": 1.3644,
+    "truth_f": 0.7092,
+    "chamfer_mm": 0.371,
+    "error": null,
+    "seconds": 0.1
+   },
+   "2pass:poisson_d8": {
+    "blind_f": 0.8311,
+    "depth_rmse": 1.0582,
+    "truth_f": 0.961,
+    "chamfer_mm": 0.19,
+    "error": null,
+    "seconds": 4.53
+   },
+   "2pass:poisson_d9": {
+    "blind_f": 0.8449,
+    "depth_rmse": 1.0705,
+    "truth_f": 0.9331,
+    "chamfer_mm": 0.209,
+    "error": null,
+    "seconds": 20.73
+   },
+   "2pass:poisson_d10": {
+    "blind_f": 0.8422,
+    "depth_rmse": 1.0358,
+    "truth_f": 0.9445,
+    "chamfer_mm": 0.202,
+    "error": null,
+    "seconds": 10.18
+   },
+   "2pass:tsdf_poisson_0.5mm": {
+    "blind_f": 0.8311,
+    "depth_rmse": 1.1216,
+    "truth_f": 0.9449,
+    "chamfer_mm": 0.151,
+    "error": null,
+    "seconds": 6.61
+   },
+   "2pass:ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 292 of 98405 faces; repair refused",
+    "seconds": 11.22
+   },
+   "1pass:tsdf_0.5mm": {
+    "blind_f": 0.7727,
+    "depth_rmse": 1.4571,
+    "truth_f": 0.5746,
+    "chamfer_mm": 1.698,
+    "error": null,
+    "seconds": 32.61
+   },
+   "1pass:tsdf_1mm": {
+    "blind_f": 0.7504,
+    "depth_rmse": 1.409,
+    "truth_f": 0.566,
+    "chamfer_mm": 1.575,
+    "error": null,
+    "seconds": 0.51
+   },
+   "1pass:tsdf_2mm": {
+    "blind_f": 0.6776,
+    "depth_rmse": 1.4801,
+    "truth_f": 0.5336,
+    "chamfer_mm": 1.594,
+    "error": null,
+    "seconds": 0.43
+   },
+   "1pass:poisson_d8": {
+    "blind_f": 0.8487,
+    "depth_rmse": 1.38,
+    "truth_f": 0.703,
+    "chamfer_mm": 0.915,
+    "error": null,
+    "seconds": 17.64
+   },
+   "1pass:poisson_d9": {
+    "blind_f": 0.8896,
+    "depth_rmse": 1.3542,
+    "truth_f": 0.705,
+    "chamfer_mm": 0.866,
+    "error": null,
+    "seconds": 23.16
+   },
+   "1pass:poisson_d10": {
+    "blind_f": 0.8582,
+    "depth_rmse": 1.3824,
+    "truth_f": 0.7065,
+    "chamfer_mm": 0.881,
+    "error": null,
+    "seconds": 16.59
+   },
+   "1pass:tsdf_poisson_0.5mm": {
+    "blind_f": 0.7754,
+    "depth_rmse": 1.4015,
+    "truth_f": 0.6766,
+    "chamfer_mm": 1.015,
+    "error": null,
+    "seconds": 9.58
+   },
+   "1pass:ball_pivoting": {
+    "blind_f": null,
+    "depth_rmse": null,
+    "truth_f": null,
+    "chamfer_mm": null,
+    "error": "ValueError: MeshFix kept only 2258 of 56618 faces; repair refused",
+    "seconds": 8.66
+   }
+  }
+ }
+]

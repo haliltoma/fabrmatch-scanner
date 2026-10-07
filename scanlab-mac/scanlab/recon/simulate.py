@@ -149,3 +149,20 @@ def placed_truth(part_mm: trimesh.Trimesh) -> trimesh.Trimesh:
 def _o3d(m: trimesh.Trimesh) -> o3d.geometry.TriangleMesh:
     return o3d.geometry.TriangleMesh(o3d.utility.Vector3dVector(np.asarray(m.vertices, float)),
                                      o3d.utility.Vector3iVector(np.asarray(m.faces, np.int32)))
+
+
+def flipped_pass(part_mm: trimesh.Trimesh, yaw_deg: float = 37.0, axis=(1.0, 0.0, 0.0)) -> tuple[trimesh.Trimesh, np.ndarray]:
+    """The part turned over (180° about `axis`) and spun by `yaw_deg`, resting on the table again.
+
+    Returns the second pass's placed mesh and the true 4×4 transform (mm) from that pass's table
+    frame to the first pass's table frame — the answer registration must find.
+    """
+    a = placed_truth(part_mm)
+    turn = trimesh.transformations.rotation_matrix(np.pi, axis)
+    spin = trimesh.transformations.rotation_matrix(np.radians(yaw_deg), [0, 0, 1])
+    b = a.copy()
+    b.apply_transform(spin @ turn)
+    place = np.eye(4)
+    place[:3, 3] = [-b.bounds[:, 0].mean(), -b.bounds[:, 1].mean(), -b.bounds[0, 2]]
+    b.apply_transform(place)
+    return b, np.linalg.inv(place @ spin @ turn)

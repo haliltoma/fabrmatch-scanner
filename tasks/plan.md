@@ -44,6 +44,17 @@ taramalarda CAD aslıyla kanıtlanır.
 TrueDepth 5/5 doğru seçim, 4 parça CAD'e F@0,5 mm ≥ 0,988. LiDAR 2/4 (ayrılmış karede ~800 piksel: seçim gürültülü), 4 mm plaka LiDAR ile masadan ayrılamıyor.
 Sonraki: R8 TrueDepth yakalama modu (iPhone, en iyi sonuçlar bu sensörde) · R9 parçayı çevirip ikinci tarama + hizalama (görülmeyen alt yüz) · R10 LiDAR için k-katlı çapraz doğrulama · R11 gürültü modellerini gerçek cihazla kalibre etme (FR-22.5)
 
+### Faz R9 — Çevir ve hizala (görülmeyen alt yüz, PRD FR-27.5 / M9.11)
+- [x] F1: Kare başına parça maskesi (masa/dağınıklık pikselleri ayrı tutulur) — tek ve çok geçişli sahneler aynı kodu kullanır
+- [x] F2: Hizalama: FPFH+RANSAC ve 24 eksen hipotezi → çok ölçekli düzleme-ICP; uygunluk/RMSE ve belirsizlik raporu
+- [x] F3: Geçişleri birleştirme: kareler ortak çerçeveye, masa kapatması yerine gözlenen alt yüz
+- [x] F4: Benchmark: çevrilmiş ikinci geçişle 5 parça; hizalama hatası (CAD'e göre) ve birleşik sonucun F-skoru
+- [x] F5a: `reconstruct_best` birden fazla tarama klasörü kabul eder
+- [ ] F5b: iPhone akışında "ters çevir ve tekrar tara" adımı (R8 TrueDepth modu ile, Xcode gerekir)
+### Kontrol noktası R9 ✅ (`scanlab-mac/benchmarks/results_recon_flip.md`): 5/5 doğru karar
+Tutamak 0,70 → 0,945 (ikinci geçiş kullanıldı); braket/mil/kutu ikinci geçişle doğrulanıp tek geçiş korundu (0,987/0,998/0,989);
+alttan-üstten simetrik ince plaka güvenilir hizalanamadığı için açıklamayla tek geçiş (0,988). Hizalama hatası 0,09–0,24 mm.
+
 ### Faz F0 — Temel
 - [x] T1: SPM paketi + test betiği + ADR'ler
 - [x] T2: Çekirdek modeller (Project/Scan, Capability, CaptureMode sözleşmesi)

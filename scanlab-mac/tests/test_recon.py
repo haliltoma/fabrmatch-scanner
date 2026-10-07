@@ -111,7 +111,7 @@ def test_pick_best_reports_when_everything_failed():
 
 def test_engine_reconstruct_keeps_all_candidates_and_heads_the_best(engine, ws, td_capture):
     td_capture[0].save(ws.inbox / "scan1")
-    result = engine.reconstruct("scan1", "Blok", algorithms=["tsdf_1mm", "tsdf_2mm", "poisson_d8"])
+    result = engine.reconstruct(["scan1"], "Blok", algorithms=["tsdf_1mm", "tsdf_2mm", "poisson_d8"])
     pid = result["project_id"]
     versions = engine.store.versions(pid)
     assert {v.tool for v in versions} == {"reconstruct:tsdf_1mm", "reconstruct:tsdf_2mm", "reconstruct:poisson_d8"}

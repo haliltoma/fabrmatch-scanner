@@ -69,6 +69,11 @@ class Scene:
     train_points: np.ndarray         # (n, 3) mm, table frame, inside ROI
     train_cameras: np.ndarray        # (n, 3) mm, camera centre that saw each point
     holdout_points: np.ndarray       # (m, 3) mm
+    # False for merged multi-pass scenes: the underside was observed, so no table footprint/closure.
+    table_closure: bool = True
+    # Merged scenes only: which pass each train/holdout frame came from.
+    train_pass: list[int] = field(default_factory=list)
+    holdout_pass: list[int] = field(default_factory=list)
     low_points: np.ndarray = field(default_factory=lambda: np.empty((0, 3)))   # 0 < z ≤ margin, in ROI
     band_points: np.ndarray = field(default_factory=lambda: np.empty((0, 3)))  # z ≤ margin, in ROI (table level)
     low_cameras: np.ndarray = field(default_factory=lambda: np.empty((0, 3)))
@@ -168,7 +173,17 @@ def prepare_scene(capture: Capture, config: ReconConfig) -> Scene:
     hp, _ = _frame_points(holdout, 2)
     htp = scene.to_table_mm(hp)
     scene.holdout_points = htp[scene.in_roi(htp) & (htp[:, 2] > margin)]
+    label_part_pixels(scene)
     return scene
+
+
+def label_part_pixels(scene: Scene) -> None:
+    """Sets `frame.part` for every frame: pixels whose 3D point belongs to the part."""
+    for f in scene.train + scene.holdout:
+        pts, mask = f.points(1)
+        part = np.zeros_like(mask)
+        part[mask] = part_mask(scene, scene.to_table_mm(pts), strict=True)
+        f.part = part
 
 
 # ── Candidates ──────────────────────────────────────────────────────────────
@@ -181,6 +196,8 @@ def footprint_points(scene: Scene, band_mm: float | None = None) -> np.ndarray:
     """
     from scipy import ndimage
 
+    if not scene.table_closure:
+        return np.empty((0, 3))
     v = scene.config.voxel_mm
     band = band_mm if band_mm is not None else scene.config.margin_mm + 4 * v
     low = scene.train_points[scene.train_points[:, 2] < band]
@@ -197,8 +214,8 @@ def footprint_points(scene: Scene, band_mm: float | None = None) -> np.ndarray:
     return np.c_[xy, np.zeros(len(xy))]
 
 
-def in_footprint(scene: Scene, xy: np.ndarray) -> np.ndarray:
-    """Top-view test: is each (x, y) on the part's contact area (dilated by one voxel)?"""
+def in_footprint(scene: Scene, xy: np.ndarray, dilate: int = 1) -> np.ndarray:
+    """Top-view test: is each (x, y) on the part's contact area (dilated by `dilate` voxels)?"""
     from scipy import ndimage
 
     foot = footprint_points(scene)
@@ -209,20 +226,34 @@ def in_footprint(scene: Scene, xy: np.ndarray) -> np.ndarray:
     ij = np.floor((foot[:, :2] - origin) / v).astype(int)
     grid = np.zeros(ij.max(axis=0) + 4, bool)
     grid[ij[:, 0], ij[:, 1]] = True
-    grid = ndimage.binary_dilation(grid, iterations=1)
+    if dilate:
+        grid = ndimage.binary_dilation(grid, iterations=dilate)
     q = np.floor((xy - origin) / v).astype(int)
     inside = np.all((q >= 0) & (q < grid.shape), axis=1)
     inside[inside] = grid[q[inside, 0], q[inside, 1]]
     return inside
 
 
-def part_mask(scene: Scene, p_mm: np.ndarray) -> np.ndarray:
-    """In the ROI and either above the table band or a wall base on the contact area (not table)."""
+def part_mask(scene: Scene, p_mm: np.ndarray, strict: bool = False) -> np.ndarray:
+    """In the ROI and either above the table band or on the part's contact area (not table).
+
+    strict=True labels *measured pixels*: wall bases only on the contact area itself and in the upper
+    half of the band — lower down, table and wall bottom are indistinguishable in noise, and table
+    points just outside the base became a fake flange (after flipping: fake obstacles in mid-air).
+    strict=False filters *reconstructed faces*: it must keep a closed base the algorithm put on the
+    table (z ≈ 0) under the part, so it uses the dilated contact area down to −margin.
+    """
     roi = scene.in_roi(p_mm)
+    if not scene.table_closure:
+        return roi
     low = roi & (p_mm[:, 2] <= scene.config.margin_mm)
     keep = roi & ~low
     if low.any():
-        keep[low] = in_footprint(scene, p_mm[low, :2]) & (p_mm[low, 2] > -scene.config.margin_mm)
+        if strict:
+            keep[low] = (in_footprint(scene, p_mm[low, :2], dilate=0)
+                         & (p_mm[low, 2] > 0.5 * scene.config.margin_mm))
+        else:
+            keep[low] = in_footprint(scene, p_mm[low, :2], dilate=1) & (p_mm[low, 2] > -scene.config.margin_mm)
     return keep
 
 
@@ -276,9 +307,13 @@ def tsdf(scene: Scene, voxel_mm: float) -> trimesh.Trimesh:
                                          block_count=200_000)
     for f in scene.train:
         # Keep only pixels that land in the region of interest (drops table and clutter).
-        pts, mask = f.points(1)
-        keep_px = np.zeros_like(mask)
-        keep_px[mask] = part_mask(scene, scene.to_table_mm(pts))  # no table flange around the base
+        if scene.table_closure or f.part is None:
+            # Single pass: lenient mask keeps the full wall bases down to the table band.
+            pts, valid = f.points(1)
+            keep_px = np.zeros_like(valid)
+            keep_px[valid] = part_mask(scene, scene.to_table_mm(pts))
+        else:
+            keep_px = f.part  # merged passes: strict labels, no table flange from any pass
         depth = o3d.t.geometry.Image(o3c.Tensor(np.where(keep_px, f.depth, 0).astype(np.float32)))
         K = o3c.Tensor(np.array([[f.fx, 0, f.cx], [0, f.fy, f.cy], [0, 0, 1]]), o3c.float64)
         E = o3c.Tensor(f.extrinsic_cv(), o3c.float64)
@@ -387,7 +422,7 @@ def finalize(mesh: trimesh.Trimesh, scene: Scene) -> trimesh.Trimesh:
     if not m.is_watertight:
         # Small gaps in the visible surface first, then the unseen base (the table), MeshFix last.
         m, _ = repair.fill_holes(m, max_perimeter_mm=20 * scene.config.voxel_mm)
-        if not m.is_watertight:
+        if not m.is_watertight and scene.table_closure:
             from .closure import close_on_table
 
             try:
@@ -421,37 +456,58 @@ def _surface_distance(mesh: trimesh.Trimesh, points: np.ndarray) -> np.ndarray:
     return scene.compute_distance(o3d.core.Tensor(np.asarray(points, np.float32))).numpy().astype(np.float64)
 
 
-def free_space_violations(mesh: trimesh.Trimesh, scene: Scene, samples: int = 4000, seed: int = 0,
-                          min_frames: int = 2) -> float:
-    """Share of surface samples lying in front of what cameras actually observed (invented surface)."""
-    tau = scene.config.tau_mm
-    pts, _ = trimesh.sample.sample_surface(mesh, samples, seed=np.random.default_rng(seed))
-    pts = pts[pts[:, 2] > scene.config.margin_mm]  # the closing cap on the table is unobservable
-    if len(pts) == 0:
-        return 0.0
-    from scipy import ndimage
+class FreeSpace:
+    """Per-frame observation maps, filtered once, for fast free-space queries.
 
-    world = trimesh.transform_points(pts / 1000.0, np.linalg.inv(scene.world_to_table))
-    hits = np.zeros(len(pts), int)
-    for f in scene.train + scene.holdout:
-        # Nearest confident observation in a 3×3 window: a sample on the part's silhouette must
-        # not count as "in free space" just because its rounded pixel saw the table behind it.
-        good = (f.depth > 0) & (f.confidence >= 2)
-        near = ndimage.minimum_filter(np.where(good, f.depth, np.inf), size=3)
-        all_good = ndimage.minimum_filter(good.astype(np.uint8), size=3).astype(bool)
-        cam = trimesh.transform_points(world, f.extrinsic_cv())
-        z = cam[:, 2]
-        u = np.round(cam[:, 0] / np.maximum(z, 1e-9) * f.fx + f.cx).astype(int)
-        v = np.round(cam[:, 1] / np.maximum(z, 1e-9) * f.fy + f.cy).astype(int)
-        w, h = f.size
-        ok = (z > 0) & (u >= 0) & (u < w) & (v >= 0) & (v < h)
-        obs = np.full(len(pts), np.inf)
-        obs[ok] = near[v[ok], u[ok]]
-        valid = np.zeros(len(pts), bool)
-        valid[ok] = all_good[v[ok], u[ok]]
-        # Camera saw something clearly *behind* this point → the point is in observed free space.
-        hits += valid & (z * 1000 < obs * 1000 - 2 * tau)
-    return float(np.mean(hits >= min_frames))
+    A point is "in free space" for a frame when it lies clearly in front of the nearest confident
+    observation in a `window`×`window` neighbourhood (whole window valid), so points on a silhouette
+    do not count just because their rounded pixel saw the table behind the part.
+    """
+
+    def __init__(self, scene: Scene, window: int = 5):
+        from scipy import ndimage
+
+        self.scene = scene
+        self.maps = []
+        for f in scene.train + scene.holdout:
+            good = (f.depth > 0) & (f.confidence >= 2)
+            near = ndimage.minimum_filter(np.where(good, f.depth, np.inf), size=window)
+            all_good = ndimage.minimum_filter(good.astype(np.uint8), size=window).astype(bool)
+            self.maps.append((f, near, all_good))
+        self.table_to_world = np.linalg.inv(scene.world_to_table)
+
+    def rate(self, points_mm: np.ndarray, slack_mm: float, min_frames: int = 2) -> float:
+        if len(points_mm) == 0:
+            return 0.0
+        world = trimesh.transform_points(points_mm / 1000.0, self.table_to_world)
+        hits = np.zeros(len(points_mm), int)
+        for f, near, all_good in self.maps:
+            cam = trimesh.transform_points(world, f.extrinsic_cv())
+            z = cam[:, 2]
+            safe = np.maximum(z, 1e-9)
+            u = np.round(cam[:, 0] / safe * f.fx + f.cx).astype(int)
+            v = np.round(cam[:, 1] / safe * f.fy + f.cy).astype(int)
+            w, h = f.size
+            ok = (z > 0) & (u >= 0) & (u < w) & (v >= 0) & (v < h)
+            obs = np.full(len(points_mm), np.inf)
+            obs[ok] = near[v[ok], u[ok]]
+            valid = np.zeros(len(points_mm), bool)
+            valid[ok] = all_good[v[ok], u[ok]]
+            hits += valid & (z * 1000 < obs * 1000 - slack_mm)
+        return float(np.mean(hits >= min_frames))
+
+
+def free_space_rate(points_mm: np.ndarray, scene: Scene, slack_mm: float, min_frames: int = 2,
+                    window: int = 5) -> float:
+    return FreeSpace(scene, window).rate(points_mm, slack_mm, min_frames)
+
+
+def free_space_violations(mesh: trimesh.Trimesh, scene: Scene, samples: int = 4000, seed: int = 0) -> float:
+    """Share of surface samples in observed free space (invented surface)."""
+    pts, _ = trimesh.sample.sample_surface(mesh, samples, seed=np.random.default_rng(seed))
+    if scene.table_closure:
+        pts = pts[pts[:, 2] > scene.config.margin_mm]  # the closing cap on the table is unobservable
+    return free_space_rate(pts, scene, 2 * scene.config.tau_mm, window=3)
 
 
 def depth_consistency(mesh: trimesh.Trimesh, scene: Scene) -> dict:
@@ -467,9 +523,9 @@ def depth_consistency(mesh: trimesh.Trimesh, scene: Scene) -> dict:
     tau = scene.config.tau_mm
     residuals, covered, total, extra, background, missed = [], 0, 0, 0, 0, 0
     for f in scene.holdout:
-        pts, _ = f.points(2)
+        pts, px = f.points(2)
         tp = scene.to_table_mm(pts)
-        obj = scene.in_roi(tp) & (tp[:, 2] > scene.config.margin_mm)
+        obj = f.part[px] if f.part is not None else scene.in_roi(tp) & (tp[:, 2] > scene.config.margin_mm)
         cam = trimesh.transform_points(f.camera_center[None], scene.world_to_table)[0] * 1000
         dirs = tp - cam
         dist = np.linalg.norm(dirs, axis=1)
@@ -547,8 +603,17 @@ def reconstruct_all(capture: Capture, only: list[str] | None = None, workers: in
     from concurrent.futures import ProcessPoolExecutor
     from concurrent.futures.process import BrokenProcessPool
 
-    config = CONFIGS[capture.sensor]
-    scene = prepare_scene(capture, config)
+    return reconstruct_scene(prepare_scene(capture, CONFIGS[capture.sensor]), only, workers, timeout_s)
+
+
+def reconstruct_scene(scene: Scene, only: list[str] | None = None, workers: int = 4,
+                      timeout_s: float = 600) -> tuple[Scene, list[Candidate]]:
+    """Same as `reconstruct_all` for a prepared (possibly merged multi-pass) scene."""
+    import multiprocessing as mp
+    from concurrent.futures import ProcessPoolExecutor
+    from concurrent.futures.process import BrokenProcessPool
+
+    config = scene.config
     names = [n for n in algorithms(config) if not only or n in only]
     ctx = mp.get_context("spawn")
     pools = {n: ProcessPoolExecutor(max_workers=1, mp_context=ctx) for n in names}
@@ -571,6 +636,168 @@ def reconstruct_all(capture: Capture, only: list[str] | None = None, workers: in
     finally:
         for pool in pools.values():
             pool.shutdown(wait=False, cancel_futures=True)
+
+
+def pass_view(scene: Scene, index: int) -> Scene:
+    """The frames of one pass of a merged scene (same frame of reference)."""
+    from dataclasses import replace
+
+    train = [f for f, p in zip(scene.train, scene.train_pass) if p == index]
+    hold = [f for f, p in zip(scene.holdout, scene.holdout_pass) if p == index]
+    return replace(scene, train=train, holdout=hold, train_pass=[index] * len(train),
+                   holdout_pass=[index] * len(hold))
+
+
+def shape_score(mesh: trimesh.Trimesh, merged: Scene) -> dict:
+    """Blind score of a candidate's *shape* on every pass, independent of inter-pass alignment error.
+
+    Each pass's frames carry their own tracking/registration offset. Scoring a candidate directly on
+    all frames charges that offset to whichever candidate was not built from those frames (it made
+    single-pass candidates lose to merged ones that were worse in shape). So the candidate is first
+    rigidly snapped (normal-aware ICP) onto each pass's own training points, then scored on that
+    pass's held-out frames; the per-pass errors are pooled by pixel count.
+    """
+    from .multipass import _cloud, icp_normal_aware, part_points
+
+    vox = max(2 * merged.config.voxel_mm, 0.5)
+    samples, fi = trimesh.sample.sample_surface_even(mesh, 20_000, seed=np.random.default_rng(0))
+    normals = mesh.face_normals[fi]
+    total_sq, total_px, parts = 0.0, 0, {}
+    for index in sorted(set(merged.holdout_pass)):
+        view = pass_view(merged, index)
+        pts, cams = part_points(view, view.train)
+        cloud = _cloud(pts, cams, vox)
+        t, _, _ = icp_normal_aware(samples, normals, np.asarray(cloud.points), np.asarray(cloud.normals),
+                                   np.eye(4), (4 * vox, 2 * vox, vox, 0.5 * vox))
+        snapped = mesh.copy()
+        snapped.apply_transform(t)
+        d = depth_consistency(snapped, view)
+        parts[f"pass{index}"] = {"depth_rmse_mm": d["depth_rmse_mm"], "pixels": d["holdout_pixels"],
+                                 "snap_mm": round(float(np.linalg.norm(t[:3, 3])), 3)}
+        if d["depth_rmse_mm"] is not None:
+            total_sq += d["depth_rmse_mm"] ** 2 * d["holdout_pixels"]
+            total_px += d["holdout_pixels"]
+    return {"depth_rmse_mm": round(float(np.sqrt(total_sq / max(total_px, 1))), 4) if total_px else None,
+            "per_pass": parts}
+
+
+# Calibrated on the synthetic benchmark (benchmarks/results_recon_flip.md); see first_pass_check.
+FIRST_PASS_INVENTED_MAX = 0.02
+FIRST_PASS_MISSING_MAX = 0.05
+
+
+def first_pass_check(mesh: trimesh.Trimesh, merged: Scene) -> dict:
+    """Does what the turned pass saw contradict a first-pass-only candidate? Not circular: the
+    candidate never used the turned pass. Two symptoms, both with mm-scale slack so sub-millimetre
+    registration error does not matter:
+      invented — candidate surface where the turned pass saw empty space (e.g. a solid base filled in
+                 under a ring's curved underside),
+      missing  — turned-pass points far from the candidate (geometry the first pass never had).
+    """
+    from .multipass import part_points
+
+    view = pass_view(merged, sorted(set(merged.holdout_pass))[1])
+    slack = 3 * merged.config.tau_mm
+    samples, _ = trimesh.sample.sample_surface(mesh, 6000, seed=np.random.default_rng(0))
+    invented = FreeSpace(view).rate(samples, slack)
+    pts, _ = part_points(view, view.train)
+    pts = pts[np.random.default_rng(1).choice(len(pts), min(len(pts), 20000), replace=False)]
+    missing = float(np.mean(_surface_distance(mesh, pts) > slack))
+    return {"invented": round(invented, 4), "missing": round(missing, 4)}
+
+
+def underside_residual(mesh: trimesh.Trimesh, merged: Scene, band_mm: float) -> float | None:
+    """Depth RMSE on the turned pass's held-out pixels that show the first pass's base region
+    (z < band_mm in the first pass's table frame), after snapping the candidate onto that pass.
+
+    This is the one question a second pass can answer: was the first pass's guess about the unseen
+    base (flat, on the table) right?
+    """
+    from .multipass import _cloud, icp_normal_aware, part_points
+
+    passes = sorted(set(merged.holdout_pass))
+    if len(passes) < 2:
+        return None
+    view = pass_view(merged, passes[1])
+    vox = max(2 * merged.config.voxel_mm, 0.5)
+    samples, fi = trimesh.sample.sample_surface_even(mesh, 20_000, seed=np.random.default_rng(0))
+    pts, cams = part_points(view, view.train)
+    cloud = _cloud(pts, cams, vox)
+    t, _, _ = icp_normal_aware(samples, mesh.face_normals[fi], np.asarray(cloud.points),
+                               np.asarray(cloud.normals), np.eye(4), (4 * vox, 2 * vox, vox, 0.5 * vox))
+    snapped = mesh.copy()
+    snapped.apply_transform(t)
+    rs = o3d.t.geometry.RaycastingScene()
+    rs.add_triangles(o3d.core.Tensor(np.asarray(snapped.vertices, np.float32)),
+                     o3d.core.Tensor(np.asarray(snapped.faces, np.uint32)))
+    clip = 3 * merged.config.tau_mm
+    sq = []
+    for f in view.holdout:
+        p, px = f.points(2, part_only=True)
+        tp = view.to_table_mm(p)
+        base = tp[:, 2] < band_mm
+        if not base.any():
+            continue
+        cam = view.to_table_mm(f.camera_center[None])[0]
+        dirs = tp[base] - cam
+        dist = np.linalg.norm(dirs, axis=1)
+        rays = np.c_[np.repeat(cam[None], len(dist), axis=0), dirs / dist[:, None]].astype(np.float32)
+        hit = rs.cast_rays(o3d.core.Tensor(rays))["t_hit"].numpy()
+        r = np.where(np.isfinite(hit), hit - dist, clip)
+        sq.append(np.minimum(r * r, clip * clip))
+    if not sq:
+        return None
+    return float(np.sqrt(np.mean(np.concatenate(sq))))
+
+
+def reconstruct_passes(captures: list[Capture], only: list[str] | None = None) -> tuple[Scene, list[Candidate], dict]:
+    """Flip-and-align (PRD FR-27.5): register the turned pass onto the first, then decide whether the
+    second pass is needed at all.
+
+    Two pools: the first pass alone (unseen base closed on the table — exact for parts that sit flat)
+    and all passes merged (base observed, but every pass's tracking/alignment error included). The
+    turned pass decides between them by checking the first pass's base guess against what it saw.
+    If registration is unreliable (e.g. a thin plate that looks the same either way up), the first
+    pass alone is returned with an explanation instead of a silently wrong merge.
+    """
+    from .multipass import merge, register
+
+    if len({c.sensor for c in captures}) != 1:
+        raise ValueError("all passes must come from the same sensor")
+    config = CONFIGS[captures[0].sensor]
+    scenes = [prepare_scene(c, config) for c in captures]
+    _, single = reconstruct_scene(scenes[0], only)
+    for c in single:
+        c.name = f"1pass:{c.name}"
+    info: dict = {"used": "1pass"}
+    try:
+        registrations = [register(s, scenes[0]) for s in scenes[1:]]
+    except ValueError as e:
+        info["note"] = f"second pass not used: {e}"
+        return scenes[0], single, info
+    info["registration"] = [r.report() for r in registrations]
+    merged = merge(scenes, [np.eye(4)] + [r.transform for r in registrations])
+    _, multi = reconstruct_scene(merged, only)
+    for c in multi:
+        c.name = f"2pass:{c.name}"
+        if c.ok:
+            c.blind = {**blind_score(c.mesh, merged), **shape_score(c.mesh, merged)}
+            c.blind["watertight"] = bool(c.mesh.is_watertight)
+
+    best_single = pick_best(single)
+    ok_multi = [c for c in multi if c.ok and c.blind.get("depth_rmse_mm") is not None]
+    if not ok_multi:
+        info["note"] = "every merged reconstruction failed; first pass used"
+        return scenes[0], single, info
+    best_multi = pick_best(ok_multi)
+    check = first_pass_check(best_single.mesh, merged)
+    info["first_pass_check"] = check
+    if check["invented"] > FIRST_PASS_INVENTED_MAX or check["missing"] > FIRST_PASS_MISSING_MAX:
+        info["used"] = "2pass"
+        info["note"] = "the turned pass shows the base is not flat on the table; merged result used"
+        return merged, multi + single, info
+    info["note"] = "the turned pass confirms the base sits flat on the table; first pass used (cleaner)"
+    return scenes[0], single + multi, info
 
 
 def pick_best(candidates: list[Candidate]) -> Candidate:

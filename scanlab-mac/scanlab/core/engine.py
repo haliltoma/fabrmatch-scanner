@@ -63,42 +63,57 @@ class Engine:
         v = self.store.add_version(project.id, mesh, "import", {"source": src.name, "unit": unit}, metrics, None)
         return v, metrics
 
-    def reconstruct(self, path: str, project_name: str | None = None,
+    def reconstruct(self, paths: str | list[str], project_name: str | None = None,
                     algorithms: list[str] | None = None) -> dict:
-        """Runs every reconstruction algorithm on a raw capture folder and keeps all results.
+        """Runs every reconstruction algorithm on one capture folder, or on several passes of the same part
+        (second one turned over: flip-and-align), and keeps all results as versions.
 
         The blind-best candidate becomes the first (reference) version and the head; the others are
         stored as sibling versions so the user or agent can switch with version_revert.
         """
         from scanlab.recon.capture import Capture
-        from scanlab.recon.pipeline import pick_best, reconstruct_all
+        from scanlab.recon.pipeline import pick_best, reconstruct_all, reconstruct_passes
 
-        src = self.ws.resolve_input(path)
-        if not src.is_dir():
-            raise ValueError("expected a capture folder (capture.json + depth/*.sldf)")
-        capture = Capture.load(src)
-        scene, candidates = reconstruct_all(capture, only=algorithms)
-        best = pick_best(candidates)
-        project = self.store.create_project(project_name or src.name)
+        paths = [paths] if isinstance(paths, str) else list(paths)
+        if not paths:
+            raise ValueError("give at least one capture folder")
+        captures = []
+        for p in paths:
+            src = self.ws.resolve_input(p)
+            if not src.is_dir():
+                raise ValueError(f"{p}: expected a capture folder (capture.json + depth/*.sldf)")
+            captures.append(Capture.load(src))
+        info: dict = {}
+        if len(captures) == 1:
+            scene, candidates = reconstruct_all(captures[0], only=algorithms)
+            pool = candidates
+        else:
+            scene, candidates, info = reconstruct_passes(captures, only=algorithms)
+            pool = [c for c in candidates if c.name.startswith(info["used"])]
+        best = pick_best(pool)
+        project = self.store.create_project(project_name or self.ws.resolve_input(paths[0]).name)
         ordered = [best] + [c for c in candidates if c.ok and c is not best]
         versions = {}
         for c in ordered:
             metrics = {**_analyze.analyze(c.mesh, thickness_samples=200), "blind_score": c.blind}
             versions[c.name] = self.store.add_version(
                 project.id, c.mesh, f"reconstruct:{c.name}",
-                {"algorithm": c.name, "sensor": capture.sensor, "frames": len(capture.frames)}, metrics, None).id
+                {"algorithm": c.name, "sensor": captures[0].sensor, "passes": len(captures),
+                 "frames": sum(len(c_.frames) for c_ in captures)}, metrics, None).id
         self.store.revert(project.id, versions[best.name])
-        ranking = sorted(candidates, key=lambda c: -(c.blind.get("f") or -1))
+        ranking = sorted(candidates, key=lambda c: (c.blind.get("depth_rmse_mm") or 1e9))
         return {
             "project_id": project.id, "chosen": best.name, "chosen_version_id": versions[best.name],
-            "sensor": capture.sensor, "frames": len(capture.frames),
-            "train_frames": len(scene.train), "holdout_frames": len(scene.holdout),
-            "table_margin_mm": round(scene.config.margin_mm, 2),
+            "sensor": captures[0].sensor, "passes": len(captures),
+            "frames": sum(len(c.frames) for c in captures),
+            "multi_pass": {k: v for k, v in info.items() if k != "registration"} | (
+                {"registration": [{k: v for k, v in r.items() if k != "transform"} for r in info["registration"]]}
+                if "registration" in info else {}),
             "ranking": [{"algorithm": c.name, "version_id": versions.get(c.name), "seconds": c.seconds,
-                         "error": c.error, **c.blind} for c in ranking],
-            "note": "Blind score = agreement with held-out frames (recall) and no surface in observed free "
-                    "space (precision). It cannot see detail below sensor noise and slightly favours smooth "
-                    "surfaces; compare the top two visually when they are within 0.02.",
+                         "error": c.error, **{k: v for k, v in c.blind.items() if k != "per_pass"}}
+                        for c in ranking],
+            "note": "Blind score = depth error along camera rays on held-out frames (misses and invented "
+                    "surface count as maximal error). It cannot see detail below sensor noise.",
         }
 
     # Read-only

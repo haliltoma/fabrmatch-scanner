@@ -106,12 +106,16 @@ def mesh_import(path: str, project_name: str | None = None, unit: Literal["mm", 
 
 
 @mcp.tool(annotations=WRITE)
-def reconstruct_best(path: str, project_name: str | None = None, algorithms: list[str] | None = None) -> str:
-    """Reconstruct a raw capture folder (capture.json + depth/*.sldf from the iPhone) with every algorithm
-    (TSDF at several voxel sizes, screened Poisson at several depths, ball pivoting), score each without
-    ground truth on held-out frames, and make the best one the project head. All candidates are kept as
-    versions. Takes ~10–60 s. `path` is relative to cad_exchange/in."""
-    return _guard(lambda: _json(engine().reconstruct(path, project_name, algorithms)))
+def reconstruct_best(paths: list[str], project_name: str | None = None, algorithms: list[str] | None = None) -> str:
+    """Reconstruct raw iPhone captures (folders with capture.json + depth/*.sldf, relative to cad_exchange/in)
+    with every algorithm (TSDF, screened Poisson, TSDF→Poisson, ball pivoting) and make the best one,
+    judged on held-out frames without ground truth, the project head. All candidates are kept as versions.
+
+    One folder: single pass; the unseen base is assumed to rest flat on the table.
+    Two folders: the second pass is the part turned over. It is registered onto the first and used to
+    check that assumption; when the underside is not flat (a curved grip), the merged result is used.
+    The response explains which was used and why (multi_pass.note). Takes ~1–4 min."""
+    return _guard(lambda: _json(engine().reconstruct(paths, project_name, algorithms)))
 
 
 @mcp.tool(annotations=READ)
