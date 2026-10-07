@@ -54,10 +54,25 @@ targets:
         NSPhotoLibraryAddUsageDescription: "Ekran görüntülerini ve renderları fotoğraf kitaplığına kaydetmek için."
         NSLocalNetworkUsageDescription: "Mac Köprüsü ile aynı ağdaki Mac'e bağlanmak için."
         NSBonjourServices: [_scanlab._tcp]
+  ScanLabUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - App/ScanLabUITests
+    dependencies:
+      - target: ScanLab
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.fabrmatch.scanlab.uitests
+        TEST_TARGET_NAME: ScanLab
+        GENERATE_INFOPLIST_FILE: YES
+        # XCTestCase overrides are nonisolated; tests opt into @MainActor individually.
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
 schemes:
   ScanLab:
     build:
       targets:
         ScanLab: all
     test:
-      targets: []
+      targets:
+        - ScanLabUITests

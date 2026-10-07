@@ -8,29 +8,41 @@ struct ProjectDetailView: View {
     @State private var exporting: ExportRequest?
     @State private var viewing: ViewerRequest?
     @State private var sharing: SharedFile?
+    @State private var previewing: SharedFile?
 
     var body: some View {
         Group {
             if let model, let project = model.project {
                 List {
+                    if let primary = model.primaryViewer(projectName: project.name) {
+                        Section {
+                            EmbeddedViewer(request: primary) { viewing = primary }
+                                .listRowInsets(EdgeInsets())
+                            Button("Tam ekranda aç (ölç, kırp, AR)", systemImage: "arrow.up.left.and.arrow.down.right") { viewing = primary }
+                                .font(.headline)
+                        } footer: {
+                            Text("Döndürmek için sürükle, yakınlaştırmak için iki parmakla sıkıştır. Ölçüm ve AR için tam ekrana geç.")
+                        }
+                    }
                     ForEach(project.scans) { scan in
                         Section {
                             ScanRow(scan: scan, canExport: model.hasMesh(scan)) {
-                                exporting = ExportRequest(projectName: project.name, scan: scan,
-                                                          chunks: model.scanPaths(scan).meshChunks,
+                                exporting = ExportRequest(baseName: project.name, source: .meshChunks(model.scanPaths(scan).meshChunks),
                                                           exports: model.exportsDirectory)
                             }
-                            .contentShape(.rect)
-                            .onTapGesture { viewing = model.defaultViewer(for: scan, projectName: project.name) }
                             if model.hasMesh(scan) {
                                 Button("3B görüntüle", systemImage: "cube") {
-                                    viewing = model.viewer(.meshChunks(model.scanPaths(scan).meshChunks), title: project.name)
+                                    viewing = model.viewer(.meshChunks(model.scanPaths(scan).meshChunks), title: project.name, scan: scan)
                                 }
                             }
                             ForEach(model.outputs(of: scan), id: \.self) { file in
-                                OutputRow(file: file) {
-                                    viewing = model.viewer(.file(file), title: file.lastPathComponent)
-                                }
+                                OutputRow(file: file, onView: {
+                                    if file.pathExtension == "pdf" { previewing = SharedFile(url: file); return }
+                                    viewing = model.viewer(.file(file), title: file.lastPathComponent, scan: scan)
+                                }, onExport: {
+                                    exporting = ExportRequest(baseName: file.deletingPathExtension().lastPathComponent, source: .file(file),
+                                                              exports: model.exportsDirectory)
+                                })
                             }
                             if model.hasRawCapture(scan) {
                                 Button("Ham kareleri paylaş (ZIP, Mac'te işlemek için)", systemImage: "shippingbox") {
@@ -51,16 +63,14 @@ struct ProjectDetailView: View {
                     }
                 }
                 .navigationTitle(project.name)
-                .alert("Hata", isPresented: Binding(isPresent: Binding(get: { model.errorMessage }, set: { model.errorMessage = $0 }))) {
-                } message: {
-                    Text(model.errorMessage ?? "")
-                }
+                .modifier(ErrorAlert(model: model))
             } else {
                 ProgressView()
             }
         }
         .sheet(item: $exporting, content: ExportView.init)
-        .fullScreenCover(item: $viewing, content: ViewerView.init)
+        .fullScreenCover(item: $viewing, onDismiss: { Task { await model?.load() } }, content: ViewerView.init)
+        .sheet(item: $previewing) { file in QuickLookPreview(url: file.url).ignoresSafeArea() }
         .sheet(item: $sharing) { file in
             ShareSheet(url: file.url).presentationDetents([.medium, .large])
         }
@@ -70,39 +80,4 @@ struct ProjectDetailView: View {
             await model.load()
         }
     }
-}
-
-/// One deliverable of a scan: open it in the viewer when possible, always shareable.
-private struct OutputRow: View {
-    let file: URL
-    let onView: () -> Void
-
-    private var viewable: Bool { ["usdz", "ply", "stl", "obj"].contains(file.pathExtension.lowercased()) }
-
-    var body: some View {
-        HStack {
-            Label(file.lastPathComponent, systemImage: viewable ? "cube.transparent" : "doc.text")
-                .font(.subheadline)
-            Spacer()
-            if viewable {
-                Button("Görüntüle", action: onView).buttonStyle(.borderless)
-            }
-            ShareLink(item: file) { Image(systemName: "square.and.arrow.up") }
-                .buttonStyle(.borderless)
-                .accessibilityLabel("Paylaş")
-        }
-    }
-}
-
-struct SharedFile: Identifiable {
-    let url: URL
-    var id: URL { url }
-}
-
-struct ShareSheet: UIViewControllerRepresentable {
-    let url: URL
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: [url], applicationActivities: nil)
-    }
-    func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }

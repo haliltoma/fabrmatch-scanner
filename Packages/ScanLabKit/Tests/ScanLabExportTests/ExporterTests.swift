@@ -93,3 +93,30 @@ import Testing
         #expect(m.vertexCount == 2 && m.triangleCount == 0 && m.positions[1] == SIMD3(4, 5, 6))
     }
 }
+
+@Suite struct NewFormatTests {
+    @Test("GLB is a valid glTF 2.0 container (magic, version, 4-byte aligned chunks)")
+    func glbContainer() throws {
+        let tmp = try TemporaryDirectory()
+        let url = tmp.url.appendingPathComponent("c.glb")
+        try GLBExporter().export(ExportFixtures.cube, to: url, options: ExportOptions())
+        let data = try Data(contentsOf: url)
+        var r = ByteReader(data)
+        #expect(Array(try r.bytes(4)) == Array("glTF".utf8))
+        #expect(try r.read(UInt32.self) == 2)
+        #expect(Int(try r.read(UInt32.self)) == data.count)
+        let jsonLength = Int(try r.read(UInt32.self))
+        #expect(jsonLength % 4 == 0 && data.count % 4 == 0)
+    }
+
+    @Test("XYZ round-trips points; GLB keeps points without faces", arguments: [ExportFormat.xyz, .glb])
+    func pointClouds(format: ExportFormat) throws {
+        let tmp = try TemporaryDirectory()
+        let url = tmp.url.appendingPathComponent("p.\(format.fileExtension)")
+        let cloud = TriangleMesh(positions: [SIMD3(0, 0, 0), SIMD3(1, 2, 3), SIMD3(-1, 0.5, 2)])
+        try format.exporter.export(cloud, to: url, options: ExportOptions(unit: .millimeters))
+        let back = try format.reader.read(from: url, options: ExportOptions(unit: .millimeters))
+        #expect(back.vertexCount == 3 && back.triangleCount == 0)
+        #expect(abs(back.positions[1].z - 3) < 1e-4)
+    }
+}

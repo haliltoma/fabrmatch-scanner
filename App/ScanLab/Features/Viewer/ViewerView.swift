@@ -34,9 +34,7 @@ struct ViewerView: View {
             .navigationTitle(request.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbar }
-            .sheet(item: Binding(get: { model.arPreview.map(PreviewURL.init) }, set: { if $0 == nil { model.arPreview = nil } })) {
-                QuickLookPreview(url: $0.url).ignoresSafeArea()
-            }
+            .sheet(item: $model.arPreview) { QuickLookPreview(url: $0.url).ignoresSafeArea() }
         }
         .task { await model.load() }
     }
@@ -57,6 +55,13 @@ struct ViewerView: View {
 
     private var bottomPanel: some View {
         VStack(spacing: 10) {
+            if model.cropping {
+                CropPanel(model: model, canSave: request.outputDirectory != nil)
+            }
+            if let saved = model.savedCrop {
+                Label("Kaydedildi: \(saved.lastPathComponent)", systemImage: "checkmark.circle.fill")
+                    .font(.footnote).foregroundStyle(.green)
+            }
             if model.measuring {
                 Text(model.pendingPoint == nil ? "Ölçmek için ilk noktaya dokun" : "İkinci noktaya dokun")
                     .font(.footnote).foregroundStyle(.secondary)
@@ -85,6 +90,16 @@ struct ViewerView: View {
                 if model.canMeasure {
                     Toggle(isOn: $model.measuring) { Label("Ölç", systemImage: "ruler") }
                         .toggleStyle(.button)
+                }
+                Toggle(isOn: $model.showBox) { Label("Kutu", systemImage: "cube") }
+                    .toggleStyle(.button)
+                    .labelStyle(.iconOnly)
+                    .accessibilityLabel("Sınır kutusu")
+                if model.canCrop {
+                    Toggle(isOn: $model.cropping) { Label("Kırp", systemImage: "crop") }
+                        .toggleStyle(.button)
+                        .labelStyle(.iconOnly)
+                        .accessibilityLabel("Kırp")
                 }
             }
             if let info = statsLine { Text(info).font(.caption.monospacedDigit()).foregroundStyle(.secondary) }
@@ -120,9 +135,4 @@ struct ViewerView: View {
             }
         }
     }
-}
-
-private struct PreviewURL: Identifiable {
-    let url: URL
-    var id: URL { url }
 }

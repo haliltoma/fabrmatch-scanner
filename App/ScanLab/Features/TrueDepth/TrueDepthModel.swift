@@ -12,7 +12,7 @@ final class TrueDepthModel {
 
     let request: ScanRequest
     private(set) var phase: Phase = .preparing
-    private(set) var status = TrueDepthStatus(trackingNormal: false, distance: nil, keyframes: 0, points: 0)
+    private(set) var status = TrueDepthStatus(depthFrames: 0, distance: nil, keyframes: 0, points: 0)
     let session = ARSession()
 
     private let store: ProjectStore
@@ -28,8 +28,8 @@ final class TrueDepthModel {
 
     var guidance: String? {
         guard phase == .recording || phase == .ready || phase == .paused else { return nil }
-        if !status.trackingNormal { return "Konum takibi bekleniyor — telefonu hafifçe hareket ettir" }
-        guard let d = status.distance else { return "Parçayı ön kameraya göster" }
+        if status.depthFrames == 0 { return "TrueDepth verisi bekleniyor…" }
+        guard let d = status.distance else { return "Parçayı ön kameraya göster (20–40 cm)" }
         if d < 0.18 { return "Biraz uzaklaş (\(Int(d * 100)) cm)" }
         if d > 0.45 { return "Yaklaş (\(Int(d * 100)) cm) — ideal 20–40 cm" }
         return nil
@@ -85,12 +85,7 @@ final class TrueDepthModel {
         phase = .saving
         session.pause()
         do {
-            let points = await Task.detached(priority: .userInitiated) { recorder.fusedPoints() }.value
-            try await Task.detached(priority: .userInitiated) {
-                // mm, Y-up: opens directly in MeshLab/CloudCompare and the Mac engine.
-                try PLYBinaryExporter().export(TriangleMesh(positions: points), to: slot.paths.root.appendingPathComponent("pointcloud.ply"),
-                                               options: ExportOptions(unit: .millimeters, upAxis: .y))
-            }.value
+            let points = try await Self.writePreview(recorder, to: slot.paths.root.appendingPathComponent("pointcloud.ply"))
             try await flushManifest(slot)
             try await slot.close(stats: ScanStats(vertices: points.count, triangles: 0, durationSec: accumulated.rounded()))
             phase = .finished
@@ -99,6 +94,16 @@ final class TrueDepthModel {
             phase = .failed(error.localizedDescription)
             return nil
         }
+    }
+
+    func shutdown() { session.pause() }
+
+    /// Fused preview cloud → pointcloud.ply (mm, Y up: opens in MeshLab/CloudCompare and the Mac engine).
+    @concurrent
+    private static func writePreview(_ recorder: TrueDepthRecorder, to url: URL) async throws -> [SIMD3<Float>] {
+        let points = recorder.fusedPoints()
+        try PLYBinaryExporter().export(TriangleMesh(positions: points), to: url, options: ExportOptions(unit: .millimeters, upAxis: .y))
+        return points
     }
 
     func discard() async {

@@ -37,7 +37,9 @@ struct PhotoCaptureView: View {
                 }
             }
         }
+        .onDisappear { model?.shutdown() }
         .task {
+            guard model == nil else { return }
             let m = PhotoCaptureModel(request: request, store: appModel.store)
             model = m
             await m.prepare()

@@ -14,6 +14,9 @@ final class AppModel {
 
     func launch() async {
         capabilities = DeviceCapabilities.detect()
+        #if DEBUG
+        await DemoSeeder.seedIfRequested(store: store)
+        #endif
         // Trash retention is enforced lazily at launch (FR-2.3).
         _ = try? await store.purgeTrash()
     }

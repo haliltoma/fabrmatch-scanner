@@ -1,5 +1,8 @@
 import SceneKit
+import ScanLabCore
 import SwiftUI
+
+typealias SceneKitViewSnapshotting = SCNView
 
 /// SCNView with orbit/pan/zoom camera control (FR-10.1) and tap-to-pick for measurements (FR-11.1).
 struct SceneViewContainer: UIViewRepresentable {
@@ -26,7 +29,8 @@ struct SceneViewContainer: UIViewRepresentable {
     func updateUIView(_ view: SCNView, context: Context) {
         let c = context.coordinator
         guard let content = model.content, let scene = view.scene else { return }
-        if c.shownMode != model.mode || !c.hasContent {
+        if c.shownMode != model.mode || !c.hasContent || c.shownVersion != model.contentVersion {
+            c.shownVersion = model.contentVersion
             c.contentNode?.removeFromParentNode()
             let node = SceneBuilder.node(for: content, mode: model.mode)
             scene.rootNode.addChildNode(node)
@@ -75,6 +79,7 @@ struct SceneViewContainer: UIViewRepresentable {
         weak var view: SCNView?
         var contentNode: SCNNode?
         var shownMode: DisplayMode?
+        var shownVersion = -1
         var hasContent = false
         var fitToken = 0
         private let overlay = SCNNode()
@@ -130,6 +135,31 @@ struct SceneViewContainer: UIViewRepresentable {
                 overlay.addChildNode(n)
             }
             if let p = model.pendingPoint { marker(p, .systemRed) }
+            if model.showBox, let b = model.content.flatMap(Self.bounds) { boxLines(b, .white) }
+            if model.cropping, let b = model.cropBox { boxLines(b, .systemBlue) }
+        }
+
+        static func bounds(_ content: ViewerContent) -> BoundingBox? {
+            switch content {
+            case .mesh(let m): return m.bounds
+            case .points(let p): return BoundingBox(points: p)
+            case .scene: return nil
+            }
+        }
+
+        /// Twelve edges of an axis-aligned box.
+        @MainActor private func boxLines(_ b: BoundingBox, _ color: UIColor) {
+            let c = [SIMD3(b.min.x, b.min.y, b.min.z), SIMD3(b.max.x, b.min.y, b.min.z), SIMD3(b.max.x, b.min.y, b.max.z), SIMD3(b.min.x, b.min.y, b.max.z),
+                     SIMD3(b.min.x, b.max.y, b.min.z), SIMD3(b.max.x, b.max.y, b.min.z), SIMD3(b.max.x, b.max.y, b.max.z), SIMD3(b.min.x, b.max.y, b.max.z)]
+            let edges: [UInt16] = [0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7]
+            let geo = SCNGeometry(sources: [SCNGeometrySource(vertices: c.map { SCNVector3($0.x, $0.y, $0.z) })],
+                                  elements: [SCNGeometryElement(indices: edges, primitiveType: .line)])
+            geo.firstMaterial?.diffuse.contents = color
+            geo.firstMaterial?.lightingModel = .constant
+            geo.firstMaterial?.readsFromDepthBuffer = false
+            let n = SCNNode(geometry: geo)
+            n.renderingOrder = 100
+            overlay.addChildNode(n)
         }
     }
 }

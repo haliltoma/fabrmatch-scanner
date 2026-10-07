@@ -23,6 +23,7 @@ struct RoomPlanScanView: View {
             }
         }
         .task {
+            guard model == nil else { return }
             let m = RoomPlanModel(request: request, store: appModel.store)
             model = m
             await m.prepare()

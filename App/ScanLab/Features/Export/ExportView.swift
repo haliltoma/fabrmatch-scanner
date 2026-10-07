@@ -13,38 +13,39 @@ struct ExportView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Biçim") {
-                    Picker("Format", selection: $model.format) {
-                        ForEach(ExportFormat.allCases) { Text($0.displayName).tag($0) }
-                    }
-                    Picker("Birim", selection: $model.unit) {
-                        ForEach(LengthUnit.allCases, id: \.self) { Text($0.symbol).tag($0) }
-                    }
-                    Picker("Yukarı ekseni", selection: $model.upAxis) {
-                        Text("Y (ARKit, glTF)").tag(UpAxis.y)
-                        Text("Z (CAD, dilimleyici)").tag(UpAxis.z)
-                    }
-                }
-                Section {
-                    Button {
-                        Task { await model.export() }
-                    } label: {
-                        if model.isExporting {
-                            ProgressView()
-                        } else {
-                            Text("Dışa aktar")
+                if model.content == nil, model.errorMessage == nil {
+                    ProgressView("Hazırlanıyor…")
+                } else {
+                    Section("Biçim") {
+                        Picker("Format", selection: $model.format) {
+                            ForEach(model.formats) { Text($0.title).tag($0) }
+                        }
+                        if model.format.usesOptions {
+                            Picker("Birim", selection: $model.unit) {
+                                ForEach(LengthUnit.allCases, id: \.self) { Text($0.symbol).tag($0) }
+                            }
+                            Picker("Yukarı ekseni", selection: $model.upAxis) {
+                                Text("Y (ARKit, glTF, Blender)").tag(UpAxis.y)
+                                Text("Z (CAD, dilimleyici)").tag(UpAxis.z)
+                            }
                         }
                     }
-                    .disabled(model.isExporting)
-                }
-                if let result = model.result {
-                    Section("Sonuç") {
-                        LabeledContent("Üçgen", value: result.triangles.formatted())
-                        Label(result.verified ? "Doğrulandı (sayı + sınır kutusu)" : "Doğrulama başarısız",
-                              systemImage: result.verified ? "checkmark.seal" : "exclamationmark.triangle")
-                            .foregroundStyle(result.verified ? .green : .orange)
-                        ShareLink(item: result.url) {
-                            Label("Paylaş", systemImage: "square.and.arrow.up")
+                    Section {
+                        Button {
+                            Task { await model.export() }
+                        } label: {
+                            if model.isExporting { ProgressView() } else { Text("Dışa aktar") }
+                        }
+                        .disabled(model.isExporting || model.formats.isEmpty)
+                        .accessibilityIdentifier("export.run")
+                    }
+                    if let result = model.result {
+                        Section("Sonuç") {
+                            LabeledContent("İçerik", value: result.summary)
+                            Label(result.verified ? "Doğrulandı (yeniden okundu)" : "Doğrulama başarısız",
+                                  systemImage: result.verified ? "checkmark.seal" : "exclamationmark.triangle")
+                                .foregroundStyle(result.verified ? .green : .orange)
+                            ShareLink(item: result.url) { Label("Paylaş", systemImage: "square.and.arrow.up") }
                         }
                     }
                 }
@@ -58,5 +59,6 @@ struct ExportView: View {
                 Text(model.errorMessage ?? "")
             }
         }
+        .task { await model.load() }
     }
 }

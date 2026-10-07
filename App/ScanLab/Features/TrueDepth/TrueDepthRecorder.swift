@@ -17,6 +17,7 @@ nonisolated final class TrueDepthRecorder: NSObject, ARSessionDelegate, @uncheck
     private var lastDepthTimestamp: TimeInterval = -1
     private var lastStatus: TimeInterval = 0
     private var kept = 0
+    private var received = 0
 
     init(writer: CaptureWriter, onStatus: @escaping @Sendable (TrueDepthStatus) -> Void) {
         self.writer = writer
@@ -34,16 +35,19 @@ nonisolated final class TrueDepthRecorder: NSObject, ARSessionDelegate, @uncheck
             return
         }
         lastDepthTimestamp = frame.capturedDepthDataTimestamp
-        let normal: Bool
-        if case .normal = frame.camera.trackingState { normal = true } else { normal = false }
+        received += 1
         guard let depthFrame = depthData.makeFrame(pose: frame.camera.transform, fallbackIntrinsics: frame.camera.intrinsics,
                                                    fallbackImageSize: frame.camera.imageResolution,
                                                    timestamp: frame.capturedDepthDataTimestamp, range: Self.range) else { return }
-        if recording, keyframes.accept(pose: frame.camera.transform, time: frame.timestamp, trackingIsNormal: normal) {
+        // No tracking-state gate: in face-tracking configurations the camera only reports `.normal`
+        // while a *face* is tracked, which never happens when scanning a part — the first field test
+        // recorded zero frames. World tracking (enabled in the configuration) still poses each frame;
+        // the motion thresholds below keep only frames that add a new viewpoint.
+        if recording, keyframes.accept(pose: frame.camera.transform, time: frame.timestamp, trackingIsNormal: true) {
             kept += 1
             fuser.add(depthFrame)
             let writer = writer
-            Task.detached(priority: .utility) { try? await writer.append(depthFrame) }
+            Task(priority: .utility) { try? await writer.append(depthFrame) }
         }
         report(frame, distance: Self.centralMedian(depthFrame))
     }
@@ -51,9 +55,7 @@ nonisolated final class TrueDepthRecorder: NSObject, ARSessionDelegate, @uncheck
     private func report(_ frame: ARFrame, distance: Float?) {
         guard frame.timestamp - lastStatus >= 0.25 else { return }
         lastStatus = frame.timestamp
-        let normal: Bool
-        if case .normal = frame.camera.trackingState { normal = true } else { normal = false }
-        onStatus(TrueDepthStatus(trackingNormal: normal, distance: distance, keyframes: kept, points: fuser.pointCount))
+        onStatus(TrueDepthStatus(depthFrames: received, distance: distance, keyframes: kept, points: fuser.pointCount))
     }
 
     static func centralMedian(_ f: DepthFrame) -> Float? {

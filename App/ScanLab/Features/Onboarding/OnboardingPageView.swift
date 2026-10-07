@@ -2,11 +2,12 @@ import SwiftUI
 
 struct OnboardingPageView: View {
     let page: OnboardingPage
+    @ScaledMetric(relativeTo: .largeTitle) private var symbolSize = 72.0
 
     var body: some View {
         VStack(spacing: 20) {
             Image(systemName: page.systemImage)
-                .font(.system(size: 72))
+                .font(.system(size: symbolSize))
                 .foregroundStyle(.tint)
                 .accessibilityHidden(true)
             Text(page.title)

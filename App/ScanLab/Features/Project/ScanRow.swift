@@ -22,6 +22,7 @@ struct ScanRow: View {
                 Button("Dışa aktar", systemImage: "square.and.arrow.up", action: onExport)
                     .labelStyle(.iconOnly)
                     .buttonStyle(.borderless)
+                    .accessibilityIdentifier("scan.export")
             }
         }
     }

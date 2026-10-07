@@ -57,6 +57,7 @@ final class RoomPlanModel {
             let json = JSONEncoder()
             json.outputFormatting = [.prettyPrinted, .sortedKeys]
             try json.encode(room).write(to: slot.paths.root.appendingPathComponent("room.json"), options: .atomic)
+            try FloorPlanRenderer.render(room, title: "Kat planı", to: slot.paths.root.appendingPathComponent("floorplan.pdf"))
             try await slot.close(stats: ScanStats(vertices: 0, triangles: 0, durationSec: Date.now.timeIntervalSince(startedAt).rounded()))
             return slot.projectID
         } catch {

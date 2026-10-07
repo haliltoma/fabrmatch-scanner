@@ -18,6 +18,7 @@ struct ObjectCaptureScanView: View {
             }
         }
         .task {
+            guard model == nil else { return }
             let m = ObjectCaptureModel(request: request, store: appModel.store)
             model = m
             await m.prepare()

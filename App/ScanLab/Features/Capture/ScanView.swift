@@ -23,7 +23,9 @@ struct ScanView: View {
                 content(model)
             }
         }
+        .onDisappear { model?.shutdown() }
         .task {
+            guard model == nil else { return }
             let settings = CaptureSettings(quality: quality, maxRange: Float(maxRange), keepRawData: keepRawData)
             let model = ScanSessionModel(request: request, store: appModel.store, settings: settings)
             self.model = model

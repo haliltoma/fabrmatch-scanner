@@ -101,6 +101,27 @@ public actor ProjectStore {
         try ProjectJSON.encoder().encode(record).write(to: paths(for: projectID).scan(record.id).manifest, options: .atomic)
     }
 
+    /// Removes a scan and its folder from a project.
+    public func removeScan(_ scanID: UUID, from projectID: UUID) throws {
+        var project = try load(projectID)
+        project.scans.removeAll { $0.id == scanID }
+        try save(project)
+        let dir = paths(for: projectID).scan(scanID).root
+        if fileManager.fileExists(atPath: dir.path) { try fileManager.removeItem(at: dir) }
+    }
+
+    /// True when a scan never produced anything (aborted before capture): no stats and no files besides
+    /// its manifest and empty folders. Such scans are clutter in the project screen.
+    public func isEmptyScan(_ scan: ScanRecord, in projectID: UUID) -> Bool {
+        guard scan.stats.vertices == 0, scan.stats.triangles == 0 else { return false }
+        let root = paths(for: projectID).scan(scan.id).root
+        guard let e = fileManager.enumerator(at: root, includingPropertiesForKeys: [.isRegularFileKey]) else { return true }
+        for case let url as URL in e where url.lastPathComponent != "scan.json" {
+            if (try? url.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile == true { return false }
+        }
+        return true
+    }
+
     // MARK: Trash (FR-2.3, FR-17.4)
 
     public func moveToTrash(_ id: UUID, now: Date = .now) throws {

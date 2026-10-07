@@ -52,3 +52,30 @@ import Testing
         #expect(filtered.vertices.count == 4)
     }
 }
+
+@Suite struct MeshCropperTests {
+    @Test("Cropping keeps triangles inside the box, re-indexes and carries classes")
+    func cropsMesh() {
+        let left = MeshFixtures.floorQuad()
+        let right = MeshFixtures.floorQuad(offset: SIMD3(5, 0, 0))
+        let mesh = MeshMerger.merge([left, right])
+        let cropped = MeshCropper.crop(mesh, to: BoundingBox(min: SIMD3(-0.1, -1, -0.1), max: SIMD3(1.1, 1, 1.1)))
+        #expect(cropped.triangleCount == 2 && cropped.vertexCount == 4)
+        #expect(cropped.faceClassifications == [2, 2])
+        #expect(cropped.indices.allSatisfy { Int($0) < cropped.vertexCount })
+        #expect(cropped.bounds?.max.x ?? 9 <= 1.0001)
+    }
+
+    @Test func cropsPointClouds() {
+        let cloud = TriangleMesh(positions: [SIMD3(0, 0, 0), SIMD3(2, 0, 0), SIMD3(0.5, 0.5, 0.5)])
+        let cropped = MeshCropper.crop(cloud, to: BoundingBox(min: .zero, max: SIMD3(1, 1, 1)))
+        #expect(cropped.vertexCount == 2)
+    }
+
+    @Test("Slider fractions map onto the bounds; swapped handles still give a valid box")
+    func fractionsToBox() {
+        let b = BoundingBox(min: SIMD3(0, 0, 0), max: SIMD3(10, 20, 30))
+        let box = MeshCropper.box(in: b, lower: SIMD3(0.1, 0.5, 1), upper: SIMD3(0.9, 1, 0))
+        #expect(box.min == SIMD3(1, 10, 0) && box.max == SIMD3(9, 20, 30))
+    }
+}

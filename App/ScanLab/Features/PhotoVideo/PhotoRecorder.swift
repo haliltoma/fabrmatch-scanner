@@ -41,7 +41,7 @@ nonisolated final class PhotoRecorder: NSObject, ARSessionDelegate, @unchecked S
                                               w: Int(size.width), h: Int(size.height))
         }
         let index = (transforms?.frames.count ?? 0) + 1
-        let name = String(format: "images/%06d.jpg", index)
+        let name = "images/\(index.formatted(.number.precision(.integerLength(6)).grouping(.never))).jpg"
         transforms?.append(filePath: name, pose: frame.camera.transform)
         onCount(index)
         let image = CIImage(cvPixelBuffer: frame.capturedImage)  // CIImage copies on render; buffer not retained after

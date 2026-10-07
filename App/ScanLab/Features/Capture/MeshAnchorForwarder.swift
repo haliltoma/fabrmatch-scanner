@@ -92,7 +92,7 @@ nonisolated final class MeshAnchorForwarder: NSObject, ARSessionDelegate, @unche
         if case .normal = frame.camera.trackingState { normal = true } else { normal = false }
         guard keyframes.accept(pose: frame.camera.transform, time: frame.timestamp, trackingIsNormal: normal),
               let depthFrame = frame.makeDepthFrame() else { return }
-        Task.detached(priority: .utility) {
+        Task(priority: .utility) {
             try? await writer.append(depthFrame)
         }
     }

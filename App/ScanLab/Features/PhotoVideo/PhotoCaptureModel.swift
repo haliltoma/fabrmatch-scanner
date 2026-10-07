@@ -62,7 +62,7 @@ final class PhotoCaptureModel {
         phase = .saving
         session.pause()
         do {
-            guard let transforms = await Task.detached(priority: .userInitiated, operation: { recorder.finish() }).value,
+            guard let transforms = await Self.collect(recorder),
                   !transforms.frames.isEmpty else {
                 throw CocoaError(.fileNoSuchFile, userInfo: [NSLocalizedDescriptionKey: "Hiç kare kaydedilmedi."])
             }
@@ -76,6 +76,11 @@ final class PhotoCaptureModel {
             return nil
         }
     }
+
+    @concurrent
+    private static func collect(_ recorder: PhotoRecorder) async -> NerfstudioTransforms? { recorder.finish() }
+
+    func shutdown() { session.pause() }
 
     func discard() async {
         session.pause()

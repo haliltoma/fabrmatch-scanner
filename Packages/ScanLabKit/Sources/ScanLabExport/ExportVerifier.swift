@@ -22,6 +22,8 @@ public enum ExportVerifier {
         case (nil, nil): true
         default: false
         }
-        return ExportVerification(expectedTriangles: mesh.triangleCount, actualTriangles: reread.triangleCount, boundsMatch: boundsMatch)
+        // Point formats (XYZ) carry no faces by design.
+        let expected = format == .xyz ? 0 : mesh.triangleCount
+        return ExportVerification(expectedTriangles: expected, actualTriangles: reread.triangleCount, boundsMatch: boundsMatch)
     }
 }

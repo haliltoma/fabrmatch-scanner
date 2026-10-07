@@ -92,4 +92,31 @@ import Testing
         #expect(DiskSpace.isLow(availableBytes: 999_999_999))
         #expect(!DiskSpace.isLow(availableBytes: 2_000_000_000))
     }
+
+    @Test("Empty scans are detected and can be removed; scans with data are kept")
+    func emptyScanCleanup() async throws {
+        let tmp = try TemporaryDirectory()
+        let store = ProjectStore(root: tmp.url)
+        let project = try await store.createProject(name: "P")
+        let empty = ScanRecord(mode: .lidarMesh, sensor: .lidar, createdAt: .now, device: "T")
+        let full = ScanRecord(mode: .lidarMesh, sensor: .lidar, createdAt: .now, device: "T")
+        _ = try await store.addScan(empty, to: project.id)
+        let fullPaths = try await store.addScan(full, to: project.id)
+        try Data(count: 10).write(to: fullPaths.meshChunks.appendingPathComponent("a.bin"))
+        #expect(await store.isEmptyScan(empty, in: project.id))
+        #expect(await !store.isEmptyScan(full, in: project.id))
+        try await store.removeScan(empty.id, from: project.id)
+        #expect(try await store.load(project.id).scans.map(\.id) == [full.id])
+    }
+
+    @Test("Registering the same scan id twice keeps a single record")
+    func addScanIsIdempotent() async throws {
+        let tmp = try TemporaryDirectory()
+        let store = ProjectStore(root: tmp.url)
+        let project = try await store.createProject(name: "P")
+        let scan = ScanRecord(mode: .trueDepth, sensor: .trueDepth, createdAt: .now, device: "T")
+        _ = try await store.addScan(scan, to: project.id)
+        _ = try await store.addScan(scan, to: project.id)
+        #expect(try await store.load(project.id).scans.count == 1)
+    }
 }

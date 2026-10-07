@@ -30,7 +30,8 @@ final class ScanSessionModel {
 
     func prepare() async {
         do {
-            let record = ScanRecord(mode: request.mode, sensor: .lidar, createdAt: .now, device: UIDevice.current.model, qualityProfile: settings.quality)
+            let record = ScanRecord(id: request.scanID, mode: request.mode, sensor: .lidar, createdAt: .now,
+                                    device: UIDevice.current.model, qualityProfile: settings.quality)
             let paths = try await store.addScan(record, to: request.projectID)
             let mode = LiDARMeshCaptureMode(paths: paths, record: record) { [weak self] status in
                 Task { @MainActor in self?.apply(status) }
@@ -73,9 +74,7 @@ final class ScanSessionModel {
             if request.mode == .pointCloud {
                 let capture = artifact.scanDirectory.appendingPathComponent("raw/capture")
                 let output = artifact.scanDirectory.appendingPathComponent("pointcloud.ply")
-                let count = try await Task.detached(priority: .userInitiated) {
-                    try CapturePointCloud.write(captureDirectory: capture, to: output, voxelSize: 0.004)
-                }.value
+                let count = try await Self.fusePointCloud(capture, output)
                 artifact.record.stats.vertices = count
             }
             try await store.updateScan(artifact.record, in: request.projectID)
@@ -87,10 +86,21 @@ final class ScanSessionModel {
         }
     }
 
+    /// Called when the screen goes away: never leave an AR session running behind it.
+    func shutdown() {
+        stopLoops()
+        mode?.session.pause()
+    }
+
     func discard() async {
         stopLoops()
         await mode?.cancel()
         try? await store.moveToTrash(request.projectID)
+    }
+
+    @concurrent
+    private static func fusePointCloud(_ capture: URL, _ output: URL) async throws -> Int {
+        try CapturePointCloud.write(captureDirectory: capture, to: output, voxelSize: 0.004)
     }
 
     // MARK: Background loops

@@ -12,7 +12,7 @@ struct ScanSlot {
 
     static func open(_ request: ScanRequest, sensor: SensorKind, store: ProjectStore,
                      quality: QualityProfile = .balanced) async throws -> ScanSlot {
-        let record = ScanRecord(mode: request.mode, sensor: sensor, createdAt: .now, device: UIDevice.current.model,
+        let record = ScanRecord(id: request.scanID, mode: request.mode, sensor: sensor, createdAt: .now, device: UIDevice.current.model,
                                 qualityProfile: quality, containsFace: request.mode == .trueDepth)
         let paths = try await store.addScan(record, to: request.projectID)
         return ScanSlot(projectID: request.projectID, record: record, paths: paths, store: store)

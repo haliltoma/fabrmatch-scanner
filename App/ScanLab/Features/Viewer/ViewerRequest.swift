@@ -15,4 +15,6 @@ struct ViewerRequest: Identifiable, Hashable {
     /// Where measurements of this scan are kept, and where a missing project thumbnail is written.
     let measurementsURL: URL?
     let thumbnailURL: URL?
+    /// Where edits (crops) are saved as new files; nil disables saving.
+    var outputDirectory: URL? = nil
 }

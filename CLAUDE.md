@@ -17,7 +17,10 @@ Native iOS LiDAR 3D scanner. Spec: `docs/3D-Tarayici-PRD.md`. Plan & status: `ta
 - Reconstruction benchmark (algorithms vs CAD, selector regret): `cd scanlab-mac && uv run python benchmarks/run_recon.py` (add `--flip` for the two-pass flip-and-align benchmark, ~15 min)
 - Print-prep baseline benchmark: `cd scanlab-mac && uv run python benchmarks/run_baseline.py` (needs OrcaSlicer)
 - FreeCAD smoke test: `uvx --from freecad-mcp==0.1.25 python scanlab-mac/freecad_bridge/smoke_test_f0b.py`
-- App: `brew install xcodegen && xcodegen && open ScanLab.xcodeproj` (needs full Xcode)
+- App: `xcodegen && open ScanLab.xcodeproj` (Xcode 27; Personal Team TADCZKSU89 in project.yml)
+- App UI tests (simulator, seeds a demo project via the DEBUG-only `-ScanLabSeedDemo YES`):
+  `xcodebuild test -project ScanLab.xcodeproj -scheme ScanLab -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max'`
+- Install on the iPhone: build with `-allowProvisioningUpdates` for `id=<UDID>`, then `xcrun devicectl device install app …`
 
 ## Conventions
 - Swift 6 language mode. Package: no default isolation, shared mutable state in `actor`s.

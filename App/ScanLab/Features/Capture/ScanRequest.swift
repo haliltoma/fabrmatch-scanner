@@ -5,5 +5,8 @@ import ScanLabCore
 struct ScanRequest: Identifiable, Hashable {
     let projectID: UUID
     let mode: ScanModeID
-    var id: UUID { projectID }
+    /// Fixed when the request is made, so a capture screen that starts twice (SwiftUI may re-run
+    /// `.task`) re-registers the same scan instead of adding an empty duplicate.
+    var scanID = UUID()
+    var id: UUID { scanID }
 }

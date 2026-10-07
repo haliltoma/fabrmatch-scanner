@@ -17,7 +17,9 @@ struct TrueDepthScanView: View {
                 content(model)
             }
         }
+        .onDisappear { model?.shutdown() }
         .task {
+            guard model == nil else { return }
             let m = TrueDepthModel(request: request, store: appModel.store)
             model = m
             await m.prepare()
@@ -33,7 +35,7 @@ struct TrueDepthScanView: View {
             CaptureFailureView(message: message) { onClose(nil) }
         } else {
             VStack {
-                StatusCapsule(lines: ["\(m.status.keyframes) kare", "\(m.status.points.formatted(.number.notation(.compactName))) nokta",
+                StatusCapsule(lines: ["\(m.status.keyframes) kare (\(m.status.depthFrames) derinlik)", "\(m.status.points.formatted(.number.notation(.compactName))) nokta",
                                       m.status.distance.map { "\(Int($0 * 100)) cm" } ?? "— cm"],
                               warning: m.guidance)
                     .padding(.top)
